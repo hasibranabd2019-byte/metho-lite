@@ -14,3 +14,11 @@
 .variant-choice{min-height:30px;padding:5px 9px!important;border:1px solid #d4d4d4!important;border-radius:7px!important;background:#e7e7e7!important;color:#777!important;font-size:12px!important;line-height:1.2}
 .variant-choice.selected{background:#e6f1e5!important;border-color:#9fbea0!important;color:#245f32!important}
 .variant-choice .variant-check{margin-right:3px}
+
+
+/* Larger product photography on mobile */
+@media(max-width:620px){
+  .product{display:block}
+  .product-image{display:block;width:100%;height:auto;min-height:0;aspect-ratio:4/3;object-fit:cover}
+  .product-body{padding:14px}
+}
