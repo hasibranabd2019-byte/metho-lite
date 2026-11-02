@@ -42,3 +42,6 @@ The D1 binding is configured as `DB` in the Pages production and preview environ
 - Courier API booking remains disabled until valid Steadfast credentials are supplied.
 - D1 schema additions for settings, banners, visitor analytics, GPS and courier metadata have been applied to the separate METHO Lite database.
 - These changes are staged on `lite-redesign-2026-11-02`; the production branch and existing METHO site are not changed.
+
+
+- 2026-11-02 UI corrections: GPS is placed before district and only exact district/upazila name matches are auto-selected; WhatsApp/Messenger links sit above the METHO Collection heading; product quantities use +/- controls.
