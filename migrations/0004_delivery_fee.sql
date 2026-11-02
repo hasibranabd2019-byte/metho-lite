@@ -1,0 +1,2 @@
+ALTER TABLE orders ADD COLUMN delivery_fee_paisa INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE orders ADD COLUMN billable_weight_grams INTEGER NOT NULL DEFAULT 0;
