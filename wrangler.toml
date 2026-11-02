@@ -10,5 +10,5 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "metho-lite-db"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "63eea997-06f5-4f7f-91a1-df9ae90a6454"
 migrations_dir = "migrations"
