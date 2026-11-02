@@ -43,3 +43,5 @@
 .checkout{padding-top:0}
 .checkout .section-heading{margin-top:0}
 @media(max-width:620px){.hero{margin-top:6px}.hero-dots{padding-top:2px}.product-section{padding-top:2px}.collection-social{margin-bottom:8px}.checkout{padding-top:0}}
+
+.delivery-summary{background:#f7faf5;border:1px solid #dce8d8;border-radius:10px;padding:14px;margin:4px 0 10px;font-size:14px}.delivery-row{display:flex;justify-content:space-between;gap:12px;padding:5px 0;color:#40513f}.delivery-total{border-top:1px solid #d5e1d1;margin-top:6px;padding-top:10px;color:#176b32;font-size:17px;font-weight:800}.delivery-words{display:block;text-align:right;color:#778174;font-size:11px;margin-top:3px}
