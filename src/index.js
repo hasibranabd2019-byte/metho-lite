@@ -8,7 +8,7 @@ const random=()=>enc(crypto.getRandomValues(new Uint8Array(32)));
 const cookie=(v,age)=>'metho_session='+v+'; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age='+age;
 function getCookie(req){const c=(req.headers.get('Cookie')||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('metho_session='));return c?c.slice(14):'';}
 async function readBody(req){try{return await req.json();}catch{return null;}}
-const statusNames={pending:'অপেক্ষমাণ',accepted:'গৃহীত',rejected:'বাতিল',processing:'প্রসেসিং',shipped:'কুরিয়ারে পাঠানো',delivered:'ডেলিভারি সম্পন্ন',cancelled:'ক্যানসেল'};
+const statusNames={pending:'অপেক্ষমাণ',payment_verified:'পেমেন্ট যাচাই সম্পন্ন',accepted:'গৃহীত',rejected:'বাতিল',processing:'প্রসেসিং',shipped:'কুরিয়ারে পাঠানো',delivered:'ডেলিভারি সম্পন্ন',cancelled:'ক্যানসেল'};
 async function adminFor(req,env){const t=getCookie(req);if(!t)return null;return await env.DB.prepare("SELECT a.id,a.username,a.display_name FROM sessions s JOIN admins a ON a.id=s.admin_id WHERE s.token_hash=? AND s.expires_at>CURRENT_TIMESTAMP").bind(await sha(t)).first();}
 async function steadfast(env,path,method='GET',body){const key=env.STEADFAST_API_KEY,secret=env.STEADFAST_SECRET_KEY;if(!key||!secret)throw new Error('Steadfast API credentials Cloudflare Preview environment-এ সেট করা নেই।');const r=await fetch('https://portal.steadfast.com.bd/api/v1'+path,{method,headers:{'Api-Key':key,'Secret-Key':secret,'Content-Type':'application/json','Accept':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});const d=await r.json().catch(()=>({}));if(!r.ok||d.status==='error')throw new Error(d.message||'Steadfast API অনুরোধ ব্যর্থ (HTTP '+r.status+')');return d;}
 async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
