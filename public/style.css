@@ -32,3 +32,14 @@
 .buyrow{order:5;grid-template-columns:1fr;justify-content:start;margin:0 0 10px}
 .quantity-stepper{width:max-content;min-width:116px}
 .product .add{order:6}
+
+
+/* Tighten homepage spacing around banner, social links and section headings */
+.hero{margin-bottom:0}
+.hero-dots{padding:3px 0 0;min-height:0}
+.product-section{padding-top:4px}
+.collection-social{margin:0 auto 10px;gap:6px}
+.section-heading{margin-bottom:16px}
+.checkout{padding-top:0}
+.checkout .section-heading{margin-top:0}
+@media(max-width:620px){.hero{margin-top:6px}.hero-dots{padding-top:2px}.product-section{padding-top:2px}.collection-social{margin-bottom:8px}.checkout{padding-top:0}}
