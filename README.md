@@ -31,3 +31,17 @@ The D1 binding is configured as `DB` in the Pages production and preview environ
 - Do not publish the store for advertising until end-to-end order tests, admin tests, Facebook in-app browser tests, backup checks, and realistic load tests pass.
 - Do not claim guaranteed 500-concurrent-user capacity without measured load-test evidence.
 - Free Cloudflare quotas apply. No paid service or charge may be enabled without explicit approval.
+
+## Feature branch update (2026-11-02)
+- Storefront hero copy replaced by administrator-managed image banners.
+- METHO green/gold palette and Noto Sans Bengali font applied.
+- Header call action and footer WhatsApp/Messenger links are configurable.
+- Admin tabs: orders, Steadfast courier queue, products, site design, visitor statistics.
+- Customer location form includes district/upazila selectors and GPS-assisted address filling.
+- Order IDs use `MLYYMMDD-00001` daily sequence; server enforces a 60-second same-phone order cooldown.
+- Courier API booking remains disabled until valid Steadfast credentials are supplied.
+- D1 schema additions for settings, banners, visitor analytics, GPS and courier metadata have been applied to the separate METHO Lite database.
+- These changes are staged on `lite-redesign-2026-11-02`; the production branch and existing METHO site are not changed.
+
+
+- 2026-11-02 UI corrections: GPS is placed before district and only exact district/upazila name matches are auto-selected; WhatsApp/Messenger links sit above the METHO Collection heading; product quantities use +/- controls.
