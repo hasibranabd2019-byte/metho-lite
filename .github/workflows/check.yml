@@ -1,7 +1,7 @@
 name: METHO Lite checks
 on:
   push:
-    branches: [main]
+    branches: [main, 'lite-redesign-*']
   pull_request:
     branches: [main]
 jobs:
