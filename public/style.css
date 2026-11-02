@@ -5,3 +5,6 @@
 .collection-social a{display:inline-flex;align-items:center;justify-content:center;gap:8px}.collection-social a svg{width:20px;height:20px;flex:0 0 20px;display:block}.collection-social a span{line-height:1.3}
 
 .product-price-list{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 12px}.product-price-list span{display:flex;gap:6px;align-items:center;background:#f0f5ed;border:1px solid #dfe9da;border-radius:8px;padding:6px 9px;font-size:12px;color:#53644f}.product-price-list b{font-size:14px;color:#194b26}
+
+/* Product price and selectable pack sizes */
+.product-price{font-size:clamp(25px,4vw,32px);font-weight:800;line-height:1.25;color:#218344;margin:8px 0 10px;letter-spacing:-.3px}.variant-options{display:flex;gap:9px;margin:0 0 12px}.variant-choice{position:relative;flex:1;width:auto!important;min-height:40px;padding:9px 12px!important;border:1px solid #dce7d8!important;border-radius:9px!important;background:#f0f4ed!important;color:#536b52!important;font-size:14px!important;font-weight:700!important;transition:background .15s,border-color .15s}.variant-choice .variant-check{display:none;margin-right:5px;color:#218344;font-weight:900}.variant-choice.selected{background:#e6f1e5!important;border-color:#9fbea0!important;color:#245f32!important}.variant-choice.selected .variant-check{display:inline}.variant-choice:disabled{opacity:.4;cursor:not-allowed}
