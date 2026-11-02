@@ -1,2 +1,4 @@
 User-agent: *
 Disallow: /
+
+# Private testing only; remove this rule before public launch.
