@@ -3,7 +3,7 @@ const error=(message,status=400)=>json({error:message},status);
 const enc=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const bytes=s=>new TextEncoder().encode(s);
 async function sha(s){return enc(await crypto.subtle.digest('SHA-256',bytes(s)));}
-async function hashPassword(password,salt){const key=await crypto.subtle.importKey('raw',bytes(password),'PBKDF2',false,['deriveBits']);return enc(await crypto.subtle.deriveBits({name:'PBKDF2',salt:bytes(salt),iterations:210000,hash:'SHA-256'},key,256));}
+async function hashPassword(password,salt){const key=await crypto.subtle.importKey('raw',bytes(password),'PBKDF2',false,['deriveBits']);return enc(await crypto.subtle.deriveBits({name:'PBKDF2',salt:bytes(salt),iterations:100000,hash:'SHA-256'},key,256));}
 const random=()=>enc(crypto.getRandomValues(new Uint8Array(32)));
 const cookie=(v,age)=>'metho_session='+v+'; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age='+age;
 function getCookie(req){const c=(req.headers.get('Cookie')||'').split(';').map(x=>x.trim()).find(x=>x.startsWith('metho_session='));return c?c.slice(14):'';}
