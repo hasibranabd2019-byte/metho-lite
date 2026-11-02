@@ -39,5 +39,5 @@ The D1 binding is configured as `DB` in the Pages production and preview environ
 - Admin tabs: orders, Steadfast courier queue, products, site design, visitor statistics.
 - Customer location form includes district/upazila selectors and GPS-assisted address filling.
 - Order IDs use `MLYYMMDD-00001` daily sequence; server enforces a 60-second same-phone order cooldown.
-- Courier API booking remains disabled until valid Steadfast credentials are supplied.
+- Courier API booking remains disabled until valid Steadfast credentials are supplied.\n- D1 schema additions for settings, banners, visitor analytics, GPS and courier metadata have been applied to the separate METHO Lite database.
 - These changes are staged on `lite-redesign-2026-11-02`; the production branch and existing METHO site are not changed.
