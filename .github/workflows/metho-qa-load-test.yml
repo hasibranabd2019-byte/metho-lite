@@ -1,0 +1,51 @@
+name: METHO Lite QA Preview 600 VU load test
+
+on:
+  push:
+    branches: [qa/full-e2e-2026-11-03]
+    paths:
+      - 'tests/load/**'
+      - '.github/workflows/metho-qa-load-test.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE_URL: https://qa-full-e2e-2026-11-03.metho-lite.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+      - name: Verify QA Preview is healthy
+        shell: bash
+        run: |
+          ready=0
+          for attempt in $(seq 1 36); do
+            code=$(curl -sS -o /tmp/health.json -w '%{http_code}' "$BASE_URL/api/health" || true)
+            if [ "$code" = "200" ] && grep -q '"ok":true' /tmp/health.json; then
+              echo "QA Preview health check passed: $BASE_URL"
+              cat /tmp/health.json
+              ready=1
+              break
+            fi
+            echo "Waiting for QA Preview ($attempt/36), HTTP $code"
+            sleep 10
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "QA Preview did not become healthy; refusing to run load test."
+            exit 1
+          fi
+      - name: Run read-only staged load test (up to 600 VUs)
+        run: k6 run --summary-export=metho-qa-load-summary.json tests/load/metho-qa-600.js
+      - name: Upload QA load-test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: metho-lite-qa-preview-600-vu
+          path: metho-qa-load-summary.json
+          if-no-files-found: warn
+          retention-days: 14
