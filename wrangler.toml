@@ -9,6 +9,7 @@ run_worker_first = ["/api/*"]
 
 [vars]
 SUPABASE_STORAGE_BUCKET = "metho-assets"
+MEDIA_MIGRATION_ENABLED = "true"
 
 [[d1_databases]]
 binding = "DB"
