@@ -3,7 +3,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=v=>'৳'+Number(v||0).toLocaleString('bn-BD');
 const date=v=>{try{return new Date(v).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'});}catch{return '';}};
 document.addEventListener('click',async e=>{
- const b=e.target.closest('[data-invoice-order]');if(!b)return;
+ const b=e.target.closest('[data-invoice-order],[data-invoice-token]');if(!b)return;
  const original=b.textContent;b.disabled=true;b.textContent='ইনভয়েস তৈরি হচ্ছে…';let sheet;
  try{
   if(typeof window.html2pdf!=='function')throw Error('PDF সুবিধাটি লোড হয়নি।');
