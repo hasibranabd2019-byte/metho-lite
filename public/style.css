@@ -90,3 +90,12 @@
 #metho-ant-runner img{display:block;width:100%;height:auto}
 @keyframes methoAntTraverse{0%{transform:translateX(0) scaleX(1)}49.9%{transform:translateX(calc(100vw + 76px)) scaleX(1)}50%{transform:translateX(calc(100vw + 76px)) scaleX(-1)}100%{transform:translateX(0) scaleX(-1)}}
 @media(prefers-reduced-motion:reduce){#metho-ant-runner{animation:none;left:10px}}
+
+
+/* Legacy METHO visual parity: smooth anchor scrolling and the original soft shadow system. */
+html{scroll-behavior:smooth;scroll-padding-top:82px}
+:root{--shadow:0 18px 55px rgba(26,55,31,.12)}
+.product{box-shadow:var(--shadow)}
+.product:hover{box-shadow:0 22px 60px rgba(26,55,31,.16)}
+.checkout form{box-shadow:var(--shadow)}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
