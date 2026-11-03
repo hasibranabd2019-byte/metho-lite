@@ -85,7 +85,8 @@
 
 
 /* Legacy METHO ant animation — original GIF preserved from metho-bd */
-#metho-ant-runner{position:fixed;z-index:40;left:-76px;bottom:8px;width:58px;max-width:18vw;pointer-events:none;line-height:0;animation:methoAntTraverse 28s linear infinite}
+.metho-ant-track{position:relative;width:100%;height:22px;margin:2px auto 0;overflow:hidden;pointer-events:none;line-height:0}
+#metho-ant-runner{position:absolute;top:1px;left:0;width:58px;max-width:18vw;pointer-events:none;line-height:0;animation:methoAntTraverse 14s linear infinite}
 #metho-ant-runner img{display:block;width:100%;height:auto}
-@keyframes methoAntTraverse{0%{transform:translateX(0) scaleX(1)}49.9%{transform:translateX(calc(100vw + 76px)) scaleX(1)}50%{transform:translateX(calc(100vw + 76px)) scaleX(-1)}100%{transform:translateX(0) scaleX(-1)}}
-@media(prefers-reduced-motion:reduce){#metho-ant-runner{animation:none;left:10px}}
+@keyframes methoAntTraverse{0%{left:0;transform:scaleX(1)}49.9%{left:calc(100% - 58px);transform:scaleX(1)}50%{left:calc(100% - 58px);transform:scaleX(-1)}100%{left:0;transform:scaleX(-1)}}
+@media(prefers-reduced-motion:reduce){#metho-ant-runner{animation:none;left:0}}
