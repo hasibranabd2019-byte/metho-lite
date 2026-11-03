@@ -15,3 +15,7 @@
 nav button[data-tab="orders"]{position:relative;overflow:visible}nav button[data-tab="orders"] .new-orders-badge{position:absolute;top:-9px;right:-7px;z-index:3;vertical-align:initial;box-shadow:0 1px 4px #0002}
 
 .new-orders-badge[hidden]{display:none}
+
+/* Click-to-call links in admin order and courier tables */
+.phone-call{display:inline-block;color:var(--green,#194b26);font-weight:700;text-decoration:underline;text-underline-offset:3px;padding:2px 0;min-height:24px}
+.phone-call:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:3px}
