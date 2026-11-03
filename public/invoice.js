@@ -35,7 +35,7 @@ document.addEventListener('click',async e=>{
   const pdf=await worker.toPdf().get('pdf');
   if(!pdf||typeof pdf.save!=='function')throw Error('PDF ফাইল প্রস্তুত হয়নি। আবার চেষ্টা করুন।');
   if(b.dataset.invoiceUpload==='1'){
-   const jobId=String(b.dataset.whatsappJobId||'');if(!/^\\d+$/.test(jobId))throw Error('WhatsApp Queue ID পাওয়া যায়নি।');
+   const jobId=String(b.dataset.whatsappJobId||'');if(!/^\d+$/.test(jobId))throw Error('WhatsApp Queue ID পাওয়া যায়নি।');
    const blob=pdf.output('blob');const upload=await fetch('/api/admin/whatsapp/'+jobId+'/invoice',{method:'POST',headers:{'content-type':'application/pdf'},body:blob});const result=await upload.json().catch(()=>({}));if(!upload.ok)throw Error(result.error||'WhatsApp-এ ইনভয়েস যুক্ত করা যায়নি।');alert('ইনভয়েস WhatsApp Queue-তে যুক্ত হয়েছে।');
   }else pdf.save(pdfOptions.filename);
  }catch(x){alert(x.message||'ইনভয়েস ডাউনলোড করা যায়নি।');}finally{sheet?.remove();b.disabled=false;b.textContent=original;}
