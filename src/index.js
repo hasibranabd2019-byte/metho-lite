@@ -55,7 +55,7 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
      if(Number(result?.[1]?.meta?.changes||0)>0)migrated[x.type==='product'?'products':x.type==='banner'?'banners':'logo']++;
     }catch(e){failed.push({type:x.type,id:x.id,message:String(e.message||'Migration failed').slice(0,180)});}
    }
-   return json({ok:failed.length===0,migrated,failed,remaining:'পরবর্তী dry-run-এ অবশিষ্ট ছবি দেখা যাবে।',backup:'মূল ছবির Storage URL media_migration_backups টেবিলে রাখা হয়েছে; rollback সম্ভব।'},failed.length?207:200);
+   return json({ok:failed.length===0,migrated,failed,remaining:'পরবর্তী dry-run-এ অবশিষ্ট ছবি দেখা যাবে।',backup:'মূল ছবির Storage URL media_migration_backups টেবিলে রাখা হয়েছে; rollback সম্ভব।'});
   }
 
 
