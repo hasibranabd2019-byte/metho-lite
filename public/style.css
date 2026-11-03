@@ -70,4 +70,4 @@
 @media(max-width:380px){.cart-toast-text{margin:126px 0 0 0}}
 
 .quantity-stepper .quantity-label{font-size:12px;font-weight:600;color:#687768;white-space:nowrap;margin:0 2px 0 5px}
-.order-success-actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin:14px auto 2px}.order-success-actions .invoice-download-btn,.order-success-actions .go-top-btn{width:auto;min-width:115px;padding:9px 16px;border-radius:8px;font:600 13px "Noto Sans Bengali",sans-serif;white-space:nowrap}.order-success-actions .invoice-download-btn{background:#198b50;color:#fff}.order-success-actions .go-top-btn{background:#0866ff;color:#fff}
+.order-success-actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin:14px auto 2px}.order-success-actions .invoice-download-btn,.order-success-actions .go-top-btn{width:auto;min-width:115px;padding:9px 16px;border-radius:8px;font:600 13px "Noto Sans Bengali",sans-serif;white-space:nowrap}.order-success-actions .invoice-download-btn{background:#198b50;color:#fff}.order-success-actions .go-top-btn{background:#198b50;color:#fff}
