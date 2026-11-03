@@ -14,6 +14,22 @@ async function steadfast(env,path,method='GET',body){const key=env.STEADFAST_API
 const storageConfig=env=>{const base=String(env.SUPABASE_URL||'https://ghhljiclxtgzxndalztj.supabase.co').replace(/\/+$/,'')+'/storage/v1';const bucket=String(env.SUPABASE_STORAGE_BUCKET||'metho-lite-assets');if(!/^[a-z0-9][a-z0-9_-]{1,62}$/.test(bucket))throw new Error('Storage bucket configuration is invalid.');return {base,bucket};};
 async function storeImage(env,value,folder='media'){const s=String(value||'');if(!s.startsWith('data:image/'))return s;if(!/^data:image\/(png|jpeg|webp|gif|avif);base64,/i.test(s))throw new Error('ছবির ফরম্যাট সঠিক নয়।');const key=env.SUPABASE_SERVICE_ROLE_KEY;if(!key)throw new Error('ছবি সংরক্ষণের Storage সংযোগ নেই।');const mime=s.slice(5,s.indexOf(';')).toLowerCase(),ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif','image/avif':'avif'})[mime];const raw=Uint8Array.from(atob(s.slice(s.indexOf(',')+1)),c=>c.charCodeAt(0));if(!raw.length||raw.length>10485760)throw new Error('ছবিটি ১০ MB সীমার মধ্যে হতে হবে।');const name=folder+'/'+Date.now().toString(36)+'-'+random().slice(0,12)+'.'+ext,{base,bucket}=storageConfig(env);const r=await fetch(base+'/object/'+bucket+'/'+name.split('/').map(encodeURIComponent).join('/'),{method:'POST',headers:{apikey:key,authorization:'Bearer '+key,'content-type':mime,'x-upsert':'false'},body:raw});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||'ছবি Storage-এ সংরক্ষণ করা যায়নি।');return base+'/object/public/'+bucket+'/'+name.split('/').map(encodeURIComponent).join('/');}
 async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
+ if(p==='/api/ant-animation'&&m==='GET'){
+  const key=env.SUPABASE_SERVICE_ROLE_KEY;
+  if(!key)return new Response('Animation storage is not configured',{status:503});
+  const {base,bucket}=storageConfig(env);
+  const publicUrl=base+'/object/public/'+bucket+'/metho-ant.gif';
+  const cacheHeaders={'content-type':'image/gif','cache-control':'public, max-age=86400, stale-while-revalidate=604800'};
+  const existing=await fetch(publicUrl);
+  if(existing.ok)return new Response(existing.body,{headers:cacheHeaders});
+  const source=await fetch('https://metho-bd.pages.dev/metho-ant.gif');
+  if(!source.ok)return new Response('Legacy ant animation source unavailable',{status:502});
+  const bytes=await source.arrayBuffer();
+  if(bytes.byteLength>5*1024*1024)return new Response('Animation file is too large',{status:413});
+  const upload=await fetch(base+'/object/'+bucket+'/metho-ant.gif',{method:'POST',headers:{apikey:key,authorization:'Bearer '+key,'content-type':'image/gif','x-upsert':'true'},body:bytes});
+  if(!upload.ok){const detail=await upload.text();console.error('Ant animation copy failed:',upload.status,detail);return new Response('Could not copy ant animation to METHO Lite storage',{status:502});}
+  return new Response(bytes,{headers:cacheHeaders});
+ }
  if(p==='/api/health'&&m==='GET')return json({ok:true,service:'metho-lite'});
  if(p==='/api/visit'&&m==='POST'){const d=await readBody(req),id=String(d?.visitor_id||'');if(!/^[a-f0-9-]{32,36}$/i.test(id))return error('ভিজিটর আইডি সঠিক নয়।');const date=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());await env.DB.prepare('INSERT INTO site_visitors(visitor_id,visit_date,last_seen) VALUES(?,?,CURRENT_TIMESTAMP) ON CONFLICT(visitor_id,visit_date) DO UPDATE SET last_seen=CURRENT_TIMESTAMP').bind(id,date).run();return json({ok:true});}
  if(p==='/api/config'&&m==='GET'){const rows=await env.DB.prepare("SELECT key,value FROM site_settings WHERE key IN ('phone','logo_url','whatsapp_link','messenger_link','primary_color','accent_color')").all();const settings={};for(const x of rows.results){try{settings[x.key]=JSON.parse(x.value);}catch{settings[x.key]=x.value;}}const b=await env.DB.prepare('SELECT id,image_url,alt_text FROM hero_banners WHERE active=1 ORDER BY sort_order,id').all();return json({settings,banners:b.results},200,{'cache-control':'public, max-age=60, stale-while-revalidate=300'});}
