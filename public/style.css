@@ -68,3 +68,5 @@
 .cart-toast{min-height:198px}
 .cart-toast-text{margin:132px 0 0 0}
 @media(max-width:380px){.cart-toast-text{margin:126px 0 0 0}}
+
+.quantity-stepper .quantity-label{font-size:12px;font-weight:600;color:#687768;white-space:nowrap;margin:0 2px 0 5px}
