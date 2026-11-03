@@ -99,3 +99,5 @@ html{scroll-behavior:smooth;scroll-padding-top:82px}
 .product:hover{box-shadow:0 22px 60px rgba(26,55,31,.16)}
 .checkout form{box-shadow:var(--shadow)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Cloudflare Pages deployment queue re-trigger: 2026-11-04 */
