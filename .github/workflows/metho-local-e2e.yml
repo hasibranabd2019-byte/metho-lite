@@ -12,7 +12,13 @@ jobs:
         with:
           node-version: 22
       - name: Install Wrangler
-        run: npm install --no-save wrangler@4.40.0
+        run: npm install --no-save wrangler@latest
+      - name: Check JavaScript syntax
+        run: |
+          node --check src/index.js
+          node --check public/app.js
+          node --check public/admin.js
+          node --check tests/e2e-local.mjs
       - name: Apply migrations to isolated local D1
         run: npx wrangler d1 migrations apply metho-lite-db --local --persist-to .wrangler/state
       - name: Seed isolated local D1 test inventory
