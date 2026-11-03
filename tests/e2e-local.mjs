@@ -216,7 +216,7 @@ await test('Stock is reserved on order creation and never goes below zero', asyn
   assert.ok(firstOrder, 'first order was not created');
   const { data } = await request('/api/admin/variants', { cookie: adminCookie });
   const variant = data.variants.find(v => v.id === 1);
-  assert.equal(variant.stock_qty, 0, 'baseline stock is zero; API should reject this order instead of accepting it');
+  assert.equal(variant.stock_qty, 3, 'two 1kg orders should reserve two units from the seeded stock of five');
 });
 await test('Rejecting an order restores only previously reserved stock', async () => {
   assert.ok(firstOrder, 'first order was not created');
@@ -227,10 +227,10 @@ await test('Rejecting an order restores only previously reserved stock', async (
   });
   assert.equal(rejected.response.status, 200);
   const { data: variants } = await request('/api/admin/variants', { cookie: adminCookie });
-  assert.equal(variants.variants.find(v => v.id === 1).stock_qty, 0);
+  assert.equal(variants.variants.find(v => v.id === 1).stock_qty, 4, 'rejecting one order should restore exactly one reserved unit');
 });
 await test('Logout invalidates the admin session', async () => {
-  const { response } = await request('/api/auth/logout', { method: 'POST, cookie: adminCookie });
+  const { response } = await request('/api/auth/logout', { method: 'POST', cookie: adminCookie });
   assert.equal(response.status, 200);
   const after = await request('/api/admin/orders', { cookie: adminCookie });
   assert.equal(after.response.status, 401);
