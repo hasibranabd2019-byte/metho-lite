@@ -7,7 +7,7 @@ document.addEventListener('click',async e=>{
  const original=b.textContent;b.disabled=true;b.textContent='ইনভয়েস তৈরি হচ্ছে…';let sheet;
  try{
   if(typeof window.html2pdf!=='function')throw Error('PDF সুবিধাটি লোড হয়নি।');
-  const r=await fetch('/api/invoice',{method:'POST',headers:{'content-type':'application/json'},cache:'no-store',body:JSON.stringify({orderCode:b.dataset.invoiceOrder,phone:b.dataset.invoicePhone})});
+  const token=b.dataset.invoiceToken||'';const r=token?await fetch('/api/invoice/link?token='+encodeURIComponent(token),{method:'GET',cache:'no-store'}):await fetch('/api/invoice',{method:'POST',headers:{'content-type':'application/json'},cache:'no-store',body:JSON.stringify({orderCode:b.dataset.invoiceOrder,phone:b.dataset.invoicePhone})});
   const d=await r.json();if(!r.ok)throw Error(d.error||'ইনভয়েস পাওয়া যায়নি।');
   const o=d.order||{},s=d.settings||{},items=o.items||[];if(!items.length)throw Error('পণ্যের তথ্য পাওয়া যায়নি।');
   const invoiceLogo=String(s.logo_url||'https://ghhljiclxtgzxndalztj.supabase.co/storage/v1/object/public/metho-assets/1793449380540-eaec6960eb30.png');
@@ -34,10 +34,7 @@ document.addEventListener('click',async e=>{
   if(visiblePixels<1)throw Error('ইনভয়েস ফাঁকা তৈরি হচ্ছে। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।');
   const pdf=await worker.toPdf().get('pdf');
   if(!pdf||typeof pdf.save!=='function')throw Error('PDF ফাইল প্রস্তুত হয়নি। আবার চেষ্টা করুন।');
-  if(b.dataset.invoiceUpload==='1'){
-   const jobId=String(b.dataset.whatsappJobId||'');if(!/^\d+$/.test(jobId))throw Error('WhatsApp Queue ID পাওয়া যায়নি।');
-   const blob=pdf.output('blob');const upload=await fetch('/api/admin/whatsapp/'+jobId+'/invoice',{method:'POST',headers:{'content-type':'application/pdf'},body:blob});const result=await upload.json().catch(()=>({}));if(!upload.ok)throw Error(result.error||'WhatsApp-এ ইনভয়েস যুক্ত করা যায়নি।');alert('ইনভয়েস WhatsApp Queue-তে যুক্ত হয়েছে।');
-  }else pdf.save(pdfOptions.filename);
+  pdf.save(pdfOptions.filename);
  }catch(x){alert(x.message||'ইনভয়েস ডাউনলোড করা যায়নি।');}finally{sheet?.remove();b.disabled=false;b.textContent=original;}
 });
 })();
