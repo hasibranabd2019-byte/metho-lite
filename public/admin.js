@@ -23,13 +23,13 @@ async function loadAnalytics(){try{const d=await api('/api/admin/analytics');$('
 $('#analytics-refresh').onclick=loadAnalytics;
 init();
 
-let filePrefix='',filesOffset=0,filesHasMore=false,filesPublicBase='',storageFiles=[];
+let filePrefix='',filesOffset=0,filesHasMore=false,filesPublicBase='',filesBucketName='metho-lite-assets',storageFiles=[];
 const selectedStoragePaths=new Set();
 const fileSizeLabel=n=>{n=Number(n)||0;if(n<1024)return n+' B';if(n<1024*1024)return (n/1024).toFixed(1)+' KB';return (n/1024/1024).toFixed(2)+' MB';};
 function renderFiles(){
  const q=($('#files-search').value||'').trim().toLowerCase();
  const rows=storageFiles.filter(f=>!q||f.name.toLowerCase().includes(q)||String(f.path||'').toLowerCase().includes(q));
- $('#files-summary').textContent='Bucket: metho-lite-assets • '+rows.length+'টি দেখানো হচ্ছে'+(storageFiles.length!==rows.length?' (মোট লোড '+storageFiles.length+')':'')+' • ফোল্ডার: '+(filePrefix||'/');
+ $('#files-summary').textContent='Bucket: '+esc(filesBucketName)+' • '+rows.length+'টি দেখানো হচ্ছে'+(storageFiles.length!==rows.length?' (মোট লোড '+storageFiles.length+')':'')+' • ফোল্ডার: '+(filePrefix||'/');
  $('#files-grid').innerHTML=rows.length?rows.map(f=>{
   const path=f.path||(filePrefix?filePrefix+'/':'')+f.name;
   const url=f.url||filesPublicBase+path.split('/').map(encodeURIComponent).join('/');
@@ -47,7 +47,7 @@ async function loadFiles(reset=true){
  try{
   const d=await api('/api/admin/files?prefix='+encodeURIComponent(filePrefix)+'&offset='+filesOffset);
   const incoming=(d.files||[]).filter(x=>x.name!=='.folder.png');
-  storageFiles.push(...incoming);filesOffset+=(d.files||[]).length;filesHasMore=!!d.hasMore;filesPublicBase=d.public_base||filesPublicBase;
+  storageFiles.push(...incoming);filesOffset+=(d.files||[]).length;filesHasMore=!!d.hasMore;filesPublicBase=d.public_base||filesPublicBase;filesBucketName=d.bucket||filesBucketName;
   $('#files-prefix').value=filePrefix;$('#files-path').textContent=filePrefix||'মূল ফোল্ডার';
   $('#files-usage').textContent='এই তালিকায় ব্যবহৃত Storage: '+(Number(d.used_bytes||0)/1048576).toFixed(2)+' MB';
   $('#files-load-more').hidden=!filesHasMore;renderFiles();
