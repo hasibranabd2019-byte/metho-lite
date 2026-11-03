@@ -49,7 +49,7 @@ nav button[data-tab="orders"]{position:relative;overflow:visible}nav button[data
 .file-manager-shell h2{color:#194b26}
 .file-manager-shell label{font-weight:600}
 .file-manager-shell .admin-input{width:100%;padding:10px;border:1px solid #dce2d8;border-radius:9px;font:inherit;background:white}
-.file-manager-shell .admin-btn{border:0;border-radius:9px;background:#194b26;color:white;padding:10px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;margin:4px}
+.file-manager-shell .admin-btn{display:inline-block;text-decoration:none;border:0;border-radius:9px;background:#194b26;color:white;padding:10px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;margin:4px}
 .file-manager-shell .admin-btn.gold{background:#ffbd00;color:#211900}
 .file-manager-shell .admin-btn.reject-btn{background:#d62828!important;color:#fff!important}
 .file-manager-shell .admin-btn:disabled{opacity:.45;cursor:not-allowed}
