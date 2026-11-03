@@ -122,6 +122,15 @@ await test('Admin can set product variant price', async () => {
   const { data: variants } = await request('/api/admin/variants', { cookie: adminCookie });
   assert.equal(variants.variants.find(v => v.id === 1).price_paisa, 50000);
 });
+await test('Admin can update inventory stock quantity', async () => {
+  const { response, data } = await request('/api/admin/variants/1', {
+    method: 'PATCH', cookie: adminCookie, body: { stock_qty: 5 }
+  });
+  assert.equal(response.status, 200);
+  assert.equal(data.ok, true);
+  const { data: variants } = await request('/api/admin/variants', { cookie: adminCookie });
+  assert.equal(variants.variants.find(v => v.id === 1).stock_qty, 5);
+});
 await test('COD checkout computes Jhenaidah delivery and 1% COD fee server-side', async () => {
   const { response, data } = await request('/api/orders', {
     method: 'POST',
@@ -217,6 +226,17 @@ await test('Accepted orders remain excluded from courier until explicitly activa
   const queueAfter = await request('/api/admin/courier/orders', { cookie: adminCookie });
   assert.equal(queueAfter.data.orders.find(x => x.id === order.id).courier_disabled, 0);
   assert.equal(queueAfter.data.courier_configured, false);
+});
+await test('Checkout rejects quantities above remaining stock', async () => {
+  const { response } = await request('/api/orders', {
+    method: 'POST',
+    body: {
+      customer_name: 'QA Oversell Attempt', phone: '01700000003', district: 'ঢাকা',
+      address: 'রোড QA, উপজেলা: মিরপুর, জেলা: ঢাকা',
+      payment_method: 'cod', items: [{ variant_id: 1, quantity: 4 }]
+    }
+  });
+  assert.equal(response.status, 409);
 });
 await test('Stock is reserved on order creation and never goes below zero', async () => {
   assert.ok(firstOrder, 'first order was not created');
