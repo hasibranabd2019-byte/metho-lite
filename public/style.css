@@ -51,7 +51,7 @@
 .cart-toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 54px);left:50%;transform:translate(-50%,-14px);z-index:10050;display:flex;align-items:flex-start;justify-content:flex-start;min-height:140px;width:max-content;max-width:calc(100vw - 20px);padding:0;border:0;border-radius:0;background:transparent;color:#194b26;box-shadow:none;font-size:13px;font-weight:700;text-align:center;line-height:1.4;white-space:nowrap;opacity:0;visibility:hidden;overflow:visible;pointer-events:none;transition:opacity .24s ease,transform .24s ease,visibility .24s}
 .cart-toast.is-visible{opacity:1;visibility:visible;transform:translate(-50%,0)}
 .cart-toast.is-hiding{opacity:0;visibility:hidden;transform:translate(-50%,-14px)}
-.cart-toast-cat{position:absolute;right:0;top:0;width:128px;height:128px;object-fit:contain;opacity:1;mix-blend-mode:multiply;transform:translateY(0);transform-origin:55% 75%;animation:metho-cat-wave 1.15s ease-in-out infinite;z-index:1;pointer-events:none}
+.cart-toast-cat{position:absolute;right:0;top:0;width:128px;height:128px;object-fit:contain;opacity:1;mix-blend-mode:normal;transform:none;animation:none;z-index:1;pointer-events:none}
 .cart-toast-text{position:relative;z-index:2;display:block;margin:64px 76px 0 0;padding:11px 14px;border-radius:11px;background:#ffd54f;color:#194b26;box-shadow:0 7px 22px rgba(24,58,31,.18);white-space:nowrap;text-shadow:none}
 @keyframes metho-cat-wave{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(4deg)}}
 @media(max-width:380px){.cart-toast{font-size:11px;max-width:calc(100vw - 12px)}.cart-toast-text{padding:9px 10px;margin:62px 66px 0 0}.cart-toast-cat{width:112px;height:112px}}
