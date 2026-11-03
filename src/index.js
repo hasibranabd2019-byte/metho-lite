@@ -71,4 +71,28 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
  if(p==='/api/admin/analytics'&&m==='GET'){const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());const [t,w,mo,daily,monthly]=await Promise.all([env.DB.prepare('SELECT COUNT(*) n FROM site_visitors WHERE visit_date=?').bind(today).first(),env.DB.prepare("SELECT COUNT(*) n FROM site_visitors WHERE visit_date>=date(?,'-6 day')").bind(today).first(),env.DB.prepare("SELECT COUNT(*) n FROM site_visitors WHERE substr(visit_date,1,7)=substr(?,1,7)").bind(today).first(),env.DB.prepare("SELECT visit_date,COUNT(*) visitors FROM site_visitors WHERE visit_date>=date(?,'-29 day') GROUP BY visit_date ORDER BY visit_date").bind(today).all(),env.DB.prepare("SELECT substr(created_at,1,7) month,COUNT(*) orders FROM orders GROUP BY substr(created_at,1,7) ORDER BY month DESC LIMIT 12").all()]);return json({today:Number(t?.n||0),week:Number(w?.n||0),month:Number(mo?.n||0),daily_visitors:daily.results,monthly_orders:monthly.results});}
  return error('এন্ডপয়েন্ট পাওয়া যায়নি।',404);}
  return null;}
-export default {async fetch(req,env){try{const p=new URL(req.url).pathname;if(p.startsWith('/api/'))return (await api(req,env))||error('এন্ডপয়েন্ট পাওয়া যায়নি।',404);return env.ASSETS.fetch(req);}catch(e){const detail=String(e?.stack||e?.message||e).slice(0,4000);console.error('[METHO_API_ERROR]',detail);try{await env.DB.prepare("INSERT INTO site_settings(key,value,updated_at) VALUES('__debug_last_error',?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP").bind(JSON.stringify({path:new URL(req.url).pathname,error:detail,at:new Date().toISOString()})).run();}catch(logError){console.error('[METHO_LOG_WRITE_FAILED]',String(logError?.message||logError));}return json({error:'সার্ভারে সমস্যা হয়েছে।'},500);}}};
+async function drainWhatsAppOutbox(env){
+ const token=env.WHATSAPP_ACCESS_TOKEN,phoneId=env.WHATSAPP_PHONE_NUMBER_ID,version=env.WHATSAPP_GRAPH_VERSION,template=env.WHATSAPP_ORDER_TEMPLATE;
+ if(!token||!phoneId||!version||!template)return {skipped:'WhatsApp secrets/template not configured'};
+ const claimed=await env.DB.prepare("UPDATE whatsapp_outbox SET status='processing',lease_until=datetime('now','+2 minutes'),attempts=attempts+1,updated_at=CURRENT_TIMESTAMP WHERE id IN (SELECT id FROM whatsapp_outbox WHERE status='queued' AND available_at<=CURRENT_TIMESTAMP AND (lease_until IS NULL OR lease_until<CURRENT_TIMESTAMP) ORDER BY id LIMIT 10) AND status='queued' RETURNING id,order_id,event_key,recipient_e164,payload_json,attempts");
+ let sent=0,failed=0;
+ for(const job of claimed.results||[]){
+  try{
+   const p=JSON.parse(job.payload_json),money=(Number(p.total_paisa||0)/100).toFixed(2);
+   const body={messaging_product:'whatsapp',to:job.recipient_e164,type:'template',template:{name:template,language:{code:env.WHATSAPP_TEMPLATE_LANGUAGE||'bn'},components:[{type:'body',parameters:[{type:'text',text:String(p.customer_name||'গ্রাহক').slice(0,80)},{type:'text',text:String(p.order_code||'')},{type:'text',text:'৳'+money}]}]}};
+   const res=await fetch('https://graph.facebook.com/'+version+'/'+phoneId+'/messages',{method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:JSON.stringify(body)});
+   const data=await res.json().catch(()=>({}));
+   if(!res.ok||data.error)throw new Error(data.error?.message||'Meta API HTTP '+res.status);
+   const messageId=data.messages?.[0]?.id||null;
+   await env.DB.prepare("UPDATE whatsapp_outbox SET status='sent',provider_message_id=?,last_error=NULL,lease_until=NULL,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(messageId,job.id).run();sent++;
+  }catch(e){
+   const attempts=Number(job.attempts||1),terminal=attempts>=6,delay=Math.min(360,Math.pow(2,attempts)*5);
+   await env.DB.prepare("UPDATE whatsapp_outbox SET status=?,available_at=datetime('now',?),lease_until=NULL,last_error=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(terminal?'failed':'queued','+'+delay+' minutes',String(e?.message||e).slice(0,500),job.id).run();failed++;
+  }
+ }
+ return {claimed:(claimed.results||[]).length,sent,failed};
+}
+export default {
+ async fetch(req,env){try{const p=new URL(req.url).pathname;if(p.startsWith('/api/'))return (await api(req,env))||error('এন্ডপয়েন্ট পাওয়া যায়নি।',404);return env.ASSETS.fetch(req);}catch(e){const detail=String(e?.stack||e?.message||e).slice(0,4000);console.error('[METHO_API_ERROR]',detail);try{await env.DB.prepare("INSERT INTO site_settings(key,value,updated_at) VALUES('__debug_last_error',?,CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=CURRENT_TIMESTAMP").bind(JSON.stringify({path:new URL(req.url).pathname,error:detail,at:new Date().toISOString()})).run();}catch(logError){console.error('[METHO_LOG_WRITE_FAILED]',String(logError?.message||logError));}return json({error:'সার্ভারে সমস্যা হয়েছে।'},500);}},
+ async scheduled(controller,env,ctx){ctx.waitUntil(drainWhatsAppOutbox(env));}
+};
