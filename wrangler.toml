@@ -16,6 +16,7 @@ migrations_dir = "migrations"
 # Cloudflare Pages Preview must never inherit the Production database.
 [env.preview.vars]
 SUPABASE_STORAGE_BUCKET = "metho-lite-preview-assets"
+MEDIA_MIGRATION_ENABLED = "true"
 
 [[env.preview.d1_databases]]
 binding = "DB"
