@@ -12,3 +12,10 @@ binding = "DB"
 database_name = "metho-lite-db"
 database_id = "63eea997-06f5-4f7f-91a1-df9ae90a6454"
 migrations_dir = "migrations"
+
+# Cloudflare Pages Preview must never inherit the Production database.
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "metho-lite-preview-db"
+database_id = "8a628078-60b3-4061-ac11-c40b7a9029e7"
+migrations_dir = "migrations"
