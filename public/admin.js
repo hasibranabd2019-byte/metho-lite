@@ -47,7 +47,7 @@ async function loadFiles(reset=true){
  try{
   const d=await api('/api/admin/files?prefix='+encodeURIComponent(filePrefix)+'&offset='+filesOffset);
   const incoming=(d.files||[]).filter(x=>x.name!=='.folder.png');
-  storageFiles.push(...incoming);filesOffset+=incoming.length;filesHasMore=!!d.hasMore;filesPublicBase=d.public_base||filesPublicBase;
+  storageFiles.push(...incoming);filesOffset+=(d.files||[]).length;filesHasMore=!!d.hasMore;filesPublicBase=d.public_base||filesPublicBase;
   $('#files-prefix').value=filePrefix;$('#files-path').textContent=filePrefix||'মূল ফোল্ডার';
   $('#files-usage').textContent='এই তালিকায় ব্যবহৃত Storage: '+(Number(d.used_bytes||0)/1048576).toFixed(2)+' MB';
   $('#files-load-more').hidden=!filesHasMore;renderFiles();
