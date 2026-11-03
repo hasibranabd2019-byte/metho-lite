@@ -25,6 +25,38 @@ Official Meta WhatsApp Cloud API only. All sends remain asynchronous and isolate
 - Tracking template body parameters: customer name, order code, courier status.
 - Templates must be approved by Meta before live sends.
 
+## Meta template drafts (copy-ready)
+
+Create these templates in WhatsApp Manager and submit them for Meta approval. Keep the language set to Bengali.
+
+### 1) Order accepted
+- Suggested template name: `metho_order_accepted_bn`
+- Category to request: Utility
+- Language: Bengali
+- Header: None
+- Body (three variables, in this exact order):
+
+  `আসসালামু আলাইকুম {{1}}। আপনার মেঠো অর্ডার {{2}} গ্রহণ করা হয়েছে। মোট পরিশোধযোগ্য {{3}}। ইনভয়েসের কপি পেতে নিচের বোতামে চাপ দিন।`
+
+- URL button label: `ইনভয়েস ডাউনলোড`
+- Button URL: `https://metho-lite.pages.dev/invoice-download.html?token={{1}}`
+- Button dynamic variable: token suffix supplied by the Worker. Do not add a second token variable to the body.
+- Sample values for review: `রহিম`, `MTH-10001`, `৳১,২৫০.০০`; button sample suffix: `AbCdEf0123456789AbCdEf0123456789AbCdEf0123456789`.
+
+### 2) Courier tracking update
+- Suggested template name: `metho_courier_update_bn`
+- Category to request: Utility
+- Language: Bengali
+- Header: None
+- Body (three variables, in this exact order):
+
+  `আসসালামু আলাইকুম {{1}}। আপনার মেঠো অর্ডার {{2}}-এর কুরিয়ার আপডেট: {{3}}।`
+
+- No buttons.
+- Sample values for review: `রহিম`, `MTH-10001`, `কুরিয়ারে পাঠানো হয়েছে`.
+
+The Worker secrets `WHATSAPP_ORDER_TEMPLATE` and `WHATSAPP_TRACKING_TEMPLATE` must contain the exact approved template names. If Meta changes the requested category or rejects wording, use the approved version and update the Worker secret/configuration accordingly.
+
 ## Required Worker secrets
 - `WHATSAPP_ACCESS_TOKEN`
 - `WHATSAPP_PHONE_NUMBER_ID`
