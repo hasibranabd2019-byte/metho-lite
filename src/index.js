@@ -106,14 +106,15 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
  return error('এন্ডপয়েন্ট পাওয়া যায়নি।',404);}
  return null;}
 async function drainWhatsAppOutbox(env){
- const token=env.WHATSAPP_ACCESS_TOKEN,phoneId=env.WHATSAPP_PHONE_NUMBER_ID,version=env.WHATSAPP_GRAPH_VERSION,template=env.WHATSAPP_ORDER_TEMPLATE;
- if(!token||!phoneId||!version||!template)return {skipped:'WhatsApp secrets/template not configured'};
+ const token=env.WHATSAPP_ACCESS_TOKEN,phoneId=env.WHATSAPP_PHONE_NUMBER_ID,version=env.WHATSAPP_GRAPH_VERSION;
+ if(!token||!phoneId||!version)return {skipped:'WhatsApp API secrets not configured'};
  const claimed=await env.DB.prepare("UPDATE whatsapp_outbox SET status='processing',lease_until=datetime('now','+2 minutes'),attempts=attempts+1,updated_at=CURRENT_TIMESTAMP WHERE id IN (SELECT id FROM whatsapp_outbox WHERE status IN ('queued','processing') AND available_at<=CURRENT_TIMESTAMP AND (lease_until IS NULL OR lease_until<CURRENT_TIMESTAMP) ORDER BY id LIMIT 10) AND status IN ('queued','processing') RETURNING id,order_id,event_key,recipient_e164,payload_json,attempts");
  let sent=0,failed=0;
  for(const job of claimed.results||[]){
   try{
-   const p=JSON.parse(job.payload_json),money=(Number(p.total_paisa||0)/100).toFixed(2);
-   const body={messaging_product:'whatsapp',to:job.recipient_e164,type:'template',template:{name:template,language:{code:env.WHATSAPP_TEMPLATE_LANGUAGE||'bn'},components:[{type:'body',parameters:[{type:'text',text:String(p.customer_name||'গ্রাহক').slice(0,80)},{type:'text',text:String(p.order_code||'')},{type:'text',text:'৳'+money}]}]}};
+   const p=JSON.parse(job.payload_json),isTracking=job.event_key.startsWith('courier_status:'),template=isTracking?env.WHATSAPP_TRACKING_TEMPLATE:env.WHATSAPP_ORDER_TEMPLATE;if(!template)throw new Error('Required WhatsApp template secret is not configured');
+   const params=isTracking?[{type:'text',text:String(p.customer_name||'গ্রাহক').slice(0,80)},{type:'text',text:String(p.order_code||'')},{type:'text',text:String(p.courier_status||'')}]:[{type:'text',text:String(p.customer_name||'গ্রাহক').slice(0,80)},{type:'text',text:String(p.order_code||'')},{type:'text',text:'৳'+(Number(p.total_paisa||0)/100).toFixed(2)}];
+   const body={messaging_product:'whatsapp',to:job.recipient_e164,type:'template',template:{name:template,language:{code:env.WHATSAPP_TEMPLATE_LANGUAGE||'bn'},components:[{type:'body',parameters:params}]}};
    const res=await fetch('https://graph.facebook.com/'+version+'/'+phoneId+'/messages',{method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:JSON.stringify(body)});
    const data=await res.json().catch(()=>({}));
    if(!res.ok||data.error)throw new Error(data.error?.message||'Meta API HTTP '+res.status);
