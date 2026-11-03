@@ -119,7 +119,7 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
 async function drainWhatsAppOutbox(env){
  const token=env.WHATSAPP_ACCESS_TOKEN,phoneId=env.WHATSAPP_PHONE_NUMBER_ID,version=env.WHATSAPP_GRAPH_VERSION;
  if(!token||!phoneId||!version)return {skipped:'WhatsApp API secrets not configured'};
- const claimed=await env.DB.prepare("UPDATE whatsapp_outbox SET status='processing',lease_until=datetime('now','+2 minutes'),attempts=attempts+1,updated_at=CURRENT_TIMESTAMP WHERE id IN (SELECT id FROM whatsapp_outbox WHERE status IN ('queued','processing') AND available_at<=CURRENT_TIMESTAMP AND (lease_until IS NULL OR lease_until<CURRENT_TIMESTAMP) ORDER BY id LIMIT 10) AND status IN ('queued','processing') RETURNING id,order_id,event_key,recipient_e164,payload_json,attempts");
+ const claimed=await env.DB.prepare("UPDATE whatsapp_outbox SET status='processing',lease_until=datetime('now','+2 minutes'),attempts=attempts+1,updated_at=CURRENT_TIMESTAMP WHERE id IN (SELECT id FROM whatsapp_outbox WHERE status IN ('queued','processing') AND available_at<=CURRENT_TIMESTAMP AND (lease_until IS NULL OR lease_until<CURRENT_TIMESTAMP) ORDER BY id LIMIT 10) AND status IN ('queued','processing') RETURNING id,order_id,event_key,recipient_e164,payload_json,attempts").all();
  let sent=0,failed=0;
  for(const job of claimed.results||[]){
   try{
