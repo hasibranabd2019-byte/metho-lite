@@ -25,7 +25,13 @@ document.addEventListener('click',async e=>{
   overlay.appendChild(sheet);document.body.appendChild(overlay);
   if(window.QRCode){new window.QRCode(sheet.querySelector('#metho-invoice-qr'),{text:JSON.stringify({brand:'METHO',invoice:o.order_code,total:o.total_amount}),width:110,height:110,colorDark:'#173d22',colorLight:'#ffffff'});}
   if(document.fonts?.ready)await document.fonts.ready;await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-  await window.html2pdf().set({margin:0,filename:'METHO-Invoice-'+String(o.order_code).replace(/[^A-Z0-9-]/gi,'')+'.pdf',image:{type:'jpeg',quality:.98},html2canvas:{scale:2,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}}).from(sheet).save();
+  const pdfOptions={margin:0,filename:'METHO-Invoice-'+String(o.order_code).replace(/[^A-Z0-9-]/gi,'')+'.pdf',image:{type:'jpeg',quality:.98},html2canvas:{scale:1.7,useCORS:true,allowTaint:false,backgroundColor:'#fff',logging:false,windowWidth:Math.max(sheet.scrollWidth,720),windowHeight:Math.max(sheet.scrollHeight,900),scrollX:0,scrollY:0},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy']}};
+  const worker=window.html2pdf().set(pdfOptions).from(sheet).toCanvas();
+  const canvas=await worker.get('canvas');
+  if(!canvas||canvas.width<100||canvas.height<100)throw Error('ইনভয়েসের PDF ছবি তৈরি হয়নি। আবার চেষ্টা করুন।');
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});let visiblePixels=0;for(let y=10;y<canvas.height;y+=Math.max(1,Math.floor(canvas.height/20))){for(let x=10;x<canvas.width;x+=Math.max(1,Math.floor(canvas.width/20))){const p=ctx.getImageData(x,y,1,1).data;if(p[0]<245||p[1]<245||p[2]<245){visiblePixels++;if(visiblePixels>3)break;}}if(visiblePixels>3)break;}
+  if(visiblePixels<1)throw Error('ইনভয়েস ফাঁকা তৈরি হচ্ছে। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।');
+  await worker.toPdf().save();
  }catch(x){alert(x.message||'ইনভয়েস ডাউনলোড করা যায়নি।');}finally{overlay?.remove();b.disabled=false;b.textContent=original;}
 });
 })();
