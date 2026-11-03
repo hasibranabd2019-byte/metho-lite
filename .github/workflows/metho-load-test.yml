@@ -1,0 +1,56 @@
+name: METHO Lite preview load test
+
+on:
+  push:
+    branches: [load-test-500]
+    paths:
+      - 'tests/load/**'
+      - '.github/workflows/metho-load-test.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE_URL: https://load-test-500.metho-lite.pages.dev
+    steps:
+      - name: Checkout test branch
+        uses: actions/checkout@v4
+
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Wait for Cloudflare Preview deployment
+        shell: bash
+        run: |
+          ready=0
+          for attempt in $(seq 1 36); do
+            code=$(curl -sS -o /tmp/health.json -w '%{http_code}' "$BASE_URL/api/health" || true)
+            if [ "$code" = "200" ] && grep -q '"ok":true' /tmp/health.json; then
+              echo "Preview health check passed: $BASE_URL"
+              cat /tmp/health.json
+              ready=1
+              break
+            fi
+            echo "Waiting for Preview deployment ($attempt/36), HTTP $code"
+            sleep 10
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "Preview did not become healthy; refusing to run load test."
+            exit 1
+          fi
+
+      - name: Run read-only staged load test (up to 600 VUs)
+        run: k6 run --summary-export=metho-lite-load-summary.json tests/load/metho-preview-500.js
+
+      - name: Upload load-test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: metho-lite-preview-load-test
+          path: metho-lite-load-summary.json
+          if-no-files-found: warn
+          retention-days: 14
