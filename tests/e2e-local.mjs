@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
 
 const base = process.env.BASE_URL || 'http://127.0.0.1:8787';
 const results = [];
@@ -36,6 +38,15 @@ function cookieFrom(response) {
   return raw.split(';')[0];
 }
 
+const appSource = await readFile(new URL('../public/app.js', import.meta.url), 'utf8');
+const adminSource = await readFile(new URL('../public/admin.js', import.meta.url), 'utf8');
+const indexHtml = await readFile(new URL('../public/index.html', import.meta.url), 'utf8');
+const adminHtml = await readFile(new URL('../public/admin.html', import.meta.url), 'utf8');
+const formatStart = appSource.indexOf('function formatDeliveryAddress(');
+const formatEnd = appSource.indexOf('function updateCooldown(', formatStart);
+const formatSource = formatStart >= 0 && formatEnd > formatStart ? appSource.slice(formatStart, formatEnd) : '';
+const formatDeliveryAddress = formatSource ? vm.runInNewContext(formatSource + '; formatDeliveryAddress') : null;
+
 await test('Health endpoint returns service OK', async () => {
   const { response, data } = await request('/api/health');
   assert.equal(response.status, 200);
@@ -52,6 +63,11 @@ await test('Public products endpoint returns two products and four package varia
   assert.equal(response.status, 200);
   assert.equal(data.products.length, 2);
   assert.equal(data.products.reduce((n, p) => n + p.variants.length, 0), 4);
+});
+await test('Checkout address formatter preserves locality and adds district/upazila labels once', async () => {
+  assert.equal(typeof formatDeliveryAddress, 'function');
+  const formatted = formatDeliveryAddress('বাড়ি ১২, রোড ৩, কালীগঞ্জ, ঝিনাইদহ, বাংলাদেশ', 'কালীগঞ্জ', 'ঝিনাইদহ');
+  assert.equal(formatted, 'বাড়ি ১২, রোড ৩, উপজেলা: কালীগঞ্জ, জেলা: ঝিনাইদহ');
 });
 await test('Visitor analytics accepts a valid anonymous visitor ID', async () => {
   const { response, data } = await request('/api/visit', {
@@ -267,4 +283,14 @@ for (const item of results) console.log(item.status + ' | ' + item.name + (item.
 const passed = results.filter(x => x.status === 'PASS').length;
 const failed = results.filter(x => x.status === 'FAIL').length;
 console.log('\nTOTAL: ' + passed + ' passed, ' + failed + ' failed, ' + results.length + ' executed');
+const implemented = {
+  'Meta Pixel': /fbq\s*\(|fbevents/i.test(appSource + indexHtml),
+  'PWA manifest': /rel=["']manifest["']|manifest\.webmanifest/i.test(indexHtml + adminHtml),
+  'Service worker': /serviceWorker\.register|navigator\.serviceWorker/i.test(appSource + adminSource + indexHtml + adminHtml),
+  'Push notifications': /Notification\.requestPermission|PushManager/i.test(appSource + adminSource),
+  '30-item admin pagination': /pageSize|per_page|currentPage|pagination/i.test(adminSource)
+};
+for (const [feature, present] of Object.entries(implemented)) {
+  console.log((present ? 'IMPLEMENTED | ' : 'GAP | ') + feature);
+}
 if (failed) process.exitCode = 1;
