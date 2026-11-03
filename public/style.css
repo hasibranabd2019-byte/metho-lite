@@ -56,3 +56,15 @@
 @keyframes metho-cat-wave{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-4px) rotate(4deg)}}
 @media(max-width:380px){.cart-toast{font-size:11px;max-width:calc(100vw - 12px)}.cart-toast-text{padding:9px 10px;margin:62px 66px 0 0}.cart-toast-cat{width:112px;height:112px}}
 @media(prefers-reduced-motion:reduce){.cart-toast,.cart-toast-cat{animation:none;transition:none}}
+
+
+/* Variant-specific quantity control directly above the order button */
+.quantity-stepper{order:5;display:flex;align-items:center;justify-content:space-between;gap:10px;width:max-content;min-width:116px;margin:0 0 10px;padding:3px;border:1px solid #d6dfd2;border-radius:9px;background:#fff}
+.quantity-stepper button{width:30px!important;height:30px;padding:0!important;border:0!important;border-radius:6px!important;background:#edf3e9!important;color:var(--green)!important;font-size:20px!important;line-height:1}
+.quantity-stepper output{min-width:20px;text-align:center;font-size:14px;font-weight:700;color:var(--green)}
+.product .add{order:6}
+
+/* Move the toast message below the cat image instead of across its body */
+.cart-toast{min-height:198px}
+.cart-toast-text{margin:132px 0 0 0}
+@media(max-width:380px){.cart-toast-text{margin:126px 0 0 0}}
