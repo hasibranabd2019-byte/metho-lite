@@ -47,6 +47,17 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
  }
  if(p.startsWith('/api/admin/')){const a=await adminFor(req,env);if(!a)return error('লগইন প্রয়োজন।',401);
 
+ if(p==='/api/admin/whatsapp/outbox'&&m==='GET'){
+  const r=await env.DB.prepare("SELECT w.id,w.order_id,w.event_key,w.event_type,w.recipient_e164,w.status,w.attempts,w.provider_message_id,w.last_error,w.created_at,w.updated_at,o.order_code,o.customer_name FROM whatsapp_outbox w JOIN orders o ON o.id=w.order_id ORDER BY w.id DESC LIMIT 200").all();
+  return json({messages:r.results||[]});
+ }
+ const waRetry=p.match(/^\\/api\\/admin\\/whatsapp\\/(\\d+)\\/retry$/);
+ if(waRetry&&m==='POST'){
+  const id=Number(waRetry[1]);
+  const r=await env.DB.prepare("UPDATE whatsapp_outbox SET status='queued',attempts=0,available_at=CURRENT_TIMESTAMP,lease_until=NULL,last_error=NULL,updated_at=CURRENT_TIMESTAMP WHERE id=? AND status IN ('failed','queued')").bind(id).run();
+  if(!r.meta?.changes)return error('এই মেসেজ পুনরায় পাঠানো যাবে না।',409);
+  return json({ok:true});
+ }
  if(p==='/api/admin/orders/new-count'&&m==='GET'){const r=await env.DB.prepare("SELECT COUNT(*) AS count FROM orders WHERE status IN ('pending','payment_verified')").first();return json({count:Number(r?.count||0)});}
  if(p==='/api/admin/orders'&&m==='GET'){const r=await env.DB.prepare("SELECT o.*,CASE WHEN o.status IN ('pending','payment_verified') THEN 1 ELSE 0 END AS is_new_for_me FROM orders o ORDER BY o.id DESC LIMIT 300").all();const out=[];for(const o of r.results){const it=await env.DB.prepare('SELECT product_name,variant_label,quantity,unit_price_paisa,line_total_paisa FROM order_items WHERE order_id=?').bind(o.id).all();out.push({...o,status_bn:statusNames[o.status]||o.status,items:it.results});}return json({orders:out});}
  const orderView=p.match(/^\/api\/admin\/orders\/(\d+)\/view$/);if(orderView&&m==='POST'){const id=Number(orderView[1]);const exists=await env.DB.prepare('SELECT id FROM orders WHERE id=?').bind(id).first();if(!exists)return error('অর্ডার পাওয়া যায়নি।',404);await env.DB.prepare('INSERT INTO admin_order_reads(admin_id,order_id) VALUES(?,?) ON CONFLICT(admin_id,order_id) DO NOTHING').bind(a.id,id).run();return json({ok:true});}
