@@ -50,7 +50,7 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
  if(invoiceUpload&&m==='POST'){
   if(!env.METHO_INVOICES)return error('Private invoice storage binding is not configured.',503);
   if(!/^application\/pdf(?:;|$)/i.test(req.headers.get('content-type')||''))return error('শুধু PDF ফাইল গ্রহণযোগ্য।',415);
-  const jobId=Number(invoiceUpload[1]),job=await env.DB.prepare("SELECT w.id,w.order_id,w.event_key,w.recipient_e164,o.order_code FROM whatsapp_outbox w JOIN orders o ON o.id=w.order_id WHERE w.id=? AND w.event_type='order_accepted' AND w.status IN ('queued','failed')").bind(jobId).first();
+  const jobId=Number(invoiceUpload[1]),job=await env.DB.prepare("SELECT w.id,w.order_id,w.event_key,w.recipient_e164,o.order_code FROM whatsapp_outbox w JOIN orders o ON o.id=w.order_id WHERE w.id=? AND w.event_type='order_accepted' AND w.status IN ('queued','processing','sent','delivered','read','failed')").bind(jobId).first();
   if(!job)return error('অর্ডারের WhatsApp কনফার্মেশন Queue পাওয়া যায়নি।',404);
   const bytes=await req.arrayBuffer();if(bytes.byteLength<100||bytes.byteLength>5*1024*1024)return error('PDF সর্বোচ্চ ৫ MB হতে পারবে।',413);
   const magic=new Uint8Array(bytes.slice(0,5));if(String.fromCharCode(...magic)!=='%PDF-')return error('সঠিক PDF ফাইল নয়।',415);
