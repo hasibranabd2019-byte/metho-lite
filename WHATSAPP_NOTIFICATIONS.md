@@ -47,14 +47,20 @@ Official Meta WhatsApp Cloud API only. Keep all sends asynchronous and isolated 
 - `WHATSAPP_VERIFY_TOKEN` (a long random value)
 - `WHATSAPP_ORDER_TEMPLATE`
 - `WHATSAPP_TRACKING_TEMPLATE`
+- `WHATSAPP_INVOICE_TEMPLATE` (approved Utility template with a DOCUMENT header and one body parameter: order code)
 - Optional `WHATSAPP_TEMPLATE_LANGUAGE` (defaults to `bn`)
 
 Template body parameters currently expected:
 - Order template: customer name, order code, total taka amount.
 - Tracking template: customer name, order code, courier status.
 
-## Remaining rollout work
-- Invoice PDF must be rendered server-side or uploaded to private object storage with a short-lived signed URL before sending as a WhatsApp document. The existing browser-only PDF cannot be attached from the Worker.
+## Invoice PDF workflow
+- Admin Orders > WhatsApp Notifications shows an **ইনভয়েস পাঠান** action for an accepted-order confirmation that has no invoice event yet.
+- The admin action reuses the existing branded invoice renderer, posts the PDF bytes to an authenticated Worker endpoint, validates the PDF signature and 5 MB limit, and stores the object in a private R2 bucket (`metho-invoices-private`).
+- The Worker queues a separate idempotent `invoice_pdf` event. The scheduled sender reads the private R2 object, uploads it to Meta `/media`, then sends an approved document-header template using the returned media ID. No public invoice URL is exposed.
+- Create the private R2 bucket named `metho-invoices-private` in the same Cloudflare account before deploying this branch; the `METHO_INVOICES` binding is declared in `wrangler.toml`.
+
+## Remaining rollout work The existing browser-only PDF cannot be attached from the Worker.
 - Add a secure admin workflow for template preview/test and queue inspection as needed.
 - Test with a Meta test number, validate approved template names/language/parameter count, and verify webhook status transitions.
 - Add/confirm checkout consent copy and privacy policy wording.
