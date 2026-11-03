@@ -46,6 +46,21 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
   return json({ok:true});
  }
  if(p.startsWith('/api/admin/')){const a=await adminFor(req,env);if(!a)return error('লগইন প্রয়োজন।',401);
+ const invoiceUpload=p.match(/^\/api\/admin\/whatsapp\/(\d+)\/invoice$/);
+ if(invoiceUpload&&m==='POST'){
+  if(!env.METHO_INVOICES)return error('Private invoice storage binding is not configured.',503);
+  if(!/^application\/pdf(?:;|$)/i.test(req.headers.get('content-type')||''))return error('শুধু PDF ফাইল গ্রহণযোগ্য।',415);
+  const jobId=Number(invoiceUpload[1]),job=await env.DB.prepare("SELECT w.id,w.order_id,w.event_key,w.recipient_e164,o.order_code FROM whatsapp_outbox w JOIN orders o ON o.id=w.order_id WHERE w.id=? AND w.event_type='order_accepted' AND w.status IN ('queued','failed')").bind(jobId).first();
+  if(!job)return error('অর্ডারের WhatsApp কনফার্মেশন Queue পাওয়া যায়নি।',404);
+  const bytes=await req.arrayBuffer();if(bytes.byteLength<100||bytes.byteLength>5*1024*1024)return error('PDF সর্বোচ্চ ৫ MB হতে পারবে।',413);
+  const magic=new Uint8Array(bytes.slice(0,5));if(String.fromCharCode(...magic)!=='%PDF-')return error('সঠিক PDF ফাইল নয়।',415);
+  const key='invoices/'+job.order_id+'/'+String(job.order_code).replace(/[^A-Za-z0-9_-]/g,'')+'.pdf';
+  await env.METHO_INVOICES.put(key,bytes,{httpMetadata:{contentType:'application/pdf',contentDisposition:'attachment; filename="METHO-'+String(job.order_code).replace(/[^A-Za-z0-9_-]/g,'')+'.pdf"'}});
+  const payload=JSON.parse((await env.DB.prepare('SELECT payload_json FROM whatsapp_outbox WHERE id=?').bind(jobId).first()).payload_json||'{}');payload.invoice_r2_key=key;
+  await env.DB.prepare("UPDATE whatsapp_outbox SET payload_json=?,updated_at=CURRENT_TIMESTAMP WHERE id=?").bind(JSON.stringify(payload),jobId).run();
+  await env.DB.prepare("INSERT OR IGNORE INTO whatsapp_outbox(order_id,event_key,event_type,recipient_e164,payload_json) VALUES(?,?,?,?,?)").bind(job.order_id,'invoice_pdf','invoice_pdf',job.recipient_e164,JSON.stringify({order_code:job.order_code,invoice_r2_key:key})).run();
+  return json({ok:true,message:'ইনভয়েস নিরাপদে সংরক্ষণ ও WhatsApp Queue-তে যুক্ত হয়েছে।'});
+ }
 
  if(p==='/api/admin/whatsapp/outbox'&&m==='GET'){
   const r=await env.DB.prepare("SELECT w.id,w.order_id,w.event_key,w.event_type,w.recipient_e164,w.status,w.attempts,w.provider_message_id,w.last_error,w.created_at,w.updated_at,o.order_code,o.customer_name FROM whatsapp_outbox w JOIN orders o ON o.id=w.order_id ORDER BY w.id DESC LIMIT 200").all();
@@ -112,9 +127,18 @@ async function drainWhatsAppOutbox(env){
  let sent=0,failed=0;
  for(const job of claimed.results||[]){
   try{
-   const p=JSON.parse(job.payload_json),isTracking=job.event_key.startsWith('courier_status:'),template=isTracking?env.WHATSAPP_TRACKING_TEMPLATE:env.WHATSAPP_ORDER_TEMPLATE;if(!template)throw new Error('Required WhatsApp template secret is not configured');
-   const params=isTracking?[{type:'text',text:String(p.customer_name||'গ্রাহক').slice(0,80)},{type:'text',text:String(p.order_code||'')},{type:'text',text:String(p.courier_status||'')}]:[{type:'text',text:String(p.customer_name||'গ্রাহক').slice(0,80)},{type:'text',text:String(p.order_code||'')},{type:'text',text:'৳'+(Number(p.total_paisa||0)/100).toFixed(2)}];
-   const body={messaging_product:'whatsapp',to:job.recipient_e164,type:'template',template:{name:template,language:{code:env.WHATSAPP_TEMPLATE_LANGUAGE||'bn'},components:[{type:'body',parameters:params}]}};
+   const p=JSON.parse(job.payload_json),isTracking=job.event_key.startsWith('courier_status:'),isInvoice=job.event_key==='invoice_pdf',template=isTracking?env.WHATSAPP_TRACKING_TEMPLATE:isInvoice?env.WHATSAPP_INVOICE_TEMPLATE:env.WHATSAPP_ORDER_TEMPLATE;if(!template)throw new Error('Required WhatsApp template secret is not configured');
+   const params=isTracking?[{type:'text',text:String(p.customer_name||'গ্রাহক').slice(0,80)},{type:'text',text:String(p.order_code||'')},{type:'text',text:String(p.courier_status||'')}]:isInvoice?[{type:'text',text:String(p.order_code||'')}]:[{type:'text',text:String(p.customer_name||'গ্রাহক').slice(0,80)},{type:'text',text:String(p.order_code||'')},{type:'text',text:'৳'+(Number(p.total_paisa||0)/100).toFixed(2)}];
+   const components=[{type:'body',parameters:params}];
+   if(isInvoice){
+    if(!env.METHO_INVOICES||!p.invoice_r2_key)throw new Error('Invoice PDF is not available in private storage');
+    const obj=await env.METHO_INVOICES.get(p.invoice_r2_key);if(!obj)throw new Error('Invoice PDF not found in private storage');
+    const form=new FormData();form.append('messaging_product','whatsapp');form.append('type','application/pdf');form.append('file',new Blob([await obj.arrayBuffer()],{type:'application/pdf'}),'METHO-'+String(p.order_code||'invoice')+'.pdf');
+    const upload=await fetch('https://graph.facebook.com/'+version+'/'+phoneId+'/media',{method:'POST',headers:{authorization:'Bearer '+token},body:form});
+    const uploaded=await upload.json().catch(()=>({}));if(!upload.ok||uploaded.error||!uploaded.id)throw new Error(uploaded.error?.message||'Meta media upload failed');
+    components.unshift({type:'header',parameters:[{type:'document',document:{id:uploaded.id,filename:'METHO-'+String(p.order_code||'invoice')+'.pdf'}}]});
+   }
+   const body={messaging_product:'whatsapp',to:job.recipient_e164,type:'template',template:{name:template,language:{code:env.WHATSAPP_TEMPLATE_LANGUAGE||'bn'},components}};
    const res=await fetch('https://graph.facebook.com/'+version+'/'+phoneId+'/messages',{method:'POST',headers:{authorization:'Bearer '+token,'content-type':'application/json'},body:JSON.stringify(body)});
    const data=await res.json().catch(()=>({}));
    if(!res.ok||data.error)throw new Error(data.error?.message||'Meta API HTTP '+res.status);
