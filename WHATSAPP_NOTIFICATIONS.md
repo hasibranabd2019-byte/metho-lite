@@ -29,3 +29,33 @@ Official Meta WhatsApp Cloud API only. Keep all sends asynchronous and isolated 
 - Back up D1 before applying schema changes.
 - Do not enable live sends until the Meta Business Portfolio, WABA, registered sender, system-user token, app secret, webhook verify token, and required Utility templates are configured.
 - Test with the business's own opted-in number before gradual rollout.
+
+## Implemented on the feature branch
+- Checkout consent is optional and unchecked by default; the API stores it on the order.
+- Accepting an opted-in order enqueues an idempotent order confirmation.
+- Scheduled Worker drains a bounded batch, uses leases, exponential retry, and recovers expired leases.
+- Separate configured templates are used for order confirmation and courier status.
+- Courier tracking refresh enqueues only when the saved status actually changes.
+- Webhook GET verification and POST HMAC-SHA256 signature verification are implemented; sent/delivered/read/failed receipts are persisted.
+- Admin order view includes outbox state and retry for failed messages.
+
+## Required Worker secrets
+- `WHATSAPP_ACCESS_TOKEN`
+- `WHATSAPP_PHONE_NUMBER_ID`
+- `WHATSAPP_GRAPH_VERSION` (for example, the currently supported Graph API version)
+- `WHATSAPP_APP_SECRET`
+- `WHATSAPP_VERIFY_TOKEN` (a long random value)
+- `WHATSAPP_ORDER_TEMPLATE`
+- `WHATSAPP_TRACKING_TEMPLATE`
+- Optional `WHATSAPP_TEMPLATE_LANGUAGE` (defaults to `bn`)
+
+Template body parameters currently expected:
+- Order template: customer name, order code, total taka amount.
+- Tracking template: customer name, order code, courier status.
+
+## Remaining rollout work
+- Invoice PDF must be rendered server-side or uploaded to private object storage with a short-lived signed URL before sending as a WhatsApp document. The existing browser-only PDF cannot be attached from the Worker.
+- Add a secure admin workflow for template preview/test and queue inspection as needed.
+- Test with a Meta test number, validate approved template names/language/parameter count, and verify webhook status transitions.
+- Add/confirm checkout consent copy and privacy policy wording.
+- Run the D1 migration only after a production backup and explicit rollout approval. Do not deploy the scheduled sender until secrets and approved templates are present.
