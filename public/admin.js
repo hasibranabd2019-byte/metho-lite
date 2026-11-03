@@ -33,8 +33,8 @@ function renderFiles(){
  $('#files-grid').innerHTML=rows.length?rows.map(f=>{
   const path=f.path||(filePrefix?filePrefix+'/':'')+f.name;
   const url=f.url||filesPublicBase+path.split('/').map(encodeURIComponent).join('/');
-  if(f.isFolder)return '<div class="storage-file folder"><div style="font-size:44px;text-align:center;padding:24px">📁</div><div class="file-name">'+esc(f.name)+'</div><div class="file-actions"><span class="file-meta">ফোল্ডার</span><button type="button" class="secondary" data-folder="'+esc(path)+'">খুলুন</button></div></div>';
-  return '<div class="storage-file '+(f.used?'used':'')+'"><a href="'+esc(url)+'" target="_blank" rel="noopener" aria-label="ছবি খুলুন: '+esc(f.name)+'"><img src="'+esc(url)+'" alt="'+esc(f.name)+'" loading="lazy" onerror="this.style.display=\'none\'"></a><div class="file-name">'+esc(f.name)+'</div><div class="file-meta">'+fileSizeLabel(f.metadata?.size||f.size)+(f.metadata?.mimetype||f.mime?' • '+esc(f.metadata?.mimetype||f.mime):'')+'</div>'+(f.used?'<div class="used-label">✓ ওয়েবসাইটে ব্যবহৃত — সুরক্ষিত</div>':'<div class="file-meta">ওয়েবসাইটে ব্যবহারের রেফারেন্স পাওয়া যায়নি</div>')+'<div class="file-actions"><label title="নির্বাচন"><input type="checkbox" data-file-check="'+esc(path)+'" '+(f.used?'disabled':'')+' '+(selectedStoragePaths.has(path)?'checked':'')+'></label><div><a class="secondary" href="'+esc(url)+'" target="_blank" rel="noopener">দেখুন</a> <a class="secondary" href="'+esc(url)+'" download>ডাউনলোড</a></div></div><div class="file-actions"><button type="button" class="secondary" data-rename="'+esc(path)+'" '+(f.used?'disabled':'')+'>নাম পরিবর্তন</button></div></div>';
+  if(f.isFolder)return '<div class="storage-file folder"><div style="font-size:44px;text-align:center;padding:24px">📁</div><div class="file-name">'+esc(f.name)+'</div><div class="file-actions"><span class="file-meta">ফোল্ডার</span><button type="button" class="admin-btn" data-folder="'+esc(path)+'">খুলুন</button></div></div>';
+  return '<div class="storage-file '+(f.used?'used':'')+'"><a href="'+esc(url)+'" target="_blank" rel="noopener" aria-label="ছবি খুলুন: '+esc(f.name)+'"><img src="'+esc(url)+'" alt="'+esc(f.name)+'" loading="lazy" onerror="this.style.display=\'none\'"></a><div class="file-name">'+esc(f.name)+'</div><div class="file-meta">'+fileSizeLabel(f.metadata?.size||f.size)+(f.metadata?.mimetype||f.mime?' • '+esc(f.metadata?.mimetype||f.mime):'')+'</div>'+(f.used?'<div class="used-label">✓ ওয়েবসাইটে ব্যবহৃত — সুরক্ষিত</div>':'<div class="file-meta">ওয়েবসাইটে ব্যবহারের রেফারেন্স পাওয়া যায়নি</div>')+'<div class="file-actions"><label title="নির্বাচন"><input type="checkbox" data-file-check="'+esc(path)+'" '+(f.used?'disabled':'')+' '+(selectedStoragePaths.has(path)?'checked':'')+'></label><div><a class="admin-btn" href="'+esc(url)+'" target="_blank" rel="noopener">দেখুন</a> <a class="admin-btn" href="'+esc(url)+'" download>ডাউনলোড</a></div></div><div class="file-actions"><button type="button" class="admin-btn" data-rename="'+esc(path)+'" '+(f.used?'disabled':'')+'>নাম পরিবর্তন</button></div></div>';
  }).join(''):'<p class="hint">এই ফোল্ডারে কোনো ফাইল পাওয়া যায়নি।</p>';
  const selectable=rows.filter(x=>!x.isFolder&&!x.used);
  const selectedCount=selectable.filter(x=>selectedStoragePaths.has(x.path||(filePrefix?filePrefix+'/':'')+x.name)).length;
@@ -42,7 +42,7 @@ function renderFiles(){
  $('#files-select-all').checked=selectable.length>0&&selectedCount===selectable.length;
 }
 async function loadFiles(reset=true){
- const msg=$('#files-message');msg.textContent='Supabase থেকে ফাইল লোড হচ্ছে…';
+ const msg=$('#files-message');msg.hidden=false;msg.textContent='Supabase থেকে ফাইল লোড হচ্ছে…';
  if(reset){storageFiles=[];filesOffset=0;selectedStoragePaths.clear();filePrefix=$('#files-prefix').value.trim().replace(/^\/+|\/+$/g,'');}
  try{
   const d=await api('/api/admin/files?prefix='+encodeURIComponent(filePrefix)+'&offset='+filesOffset);
@@ -52,7 +52,7 @@ async function loadFiles(reset=true){
   $('#files-usage').textContent='এই তালিকায় ব্যবহৃত Storage: '+(Number(d.used_bytes||0)/1048576).toFixed(2)+' MB';
   $('#files-load-more').hidden=!filesHasMore;renderFiles();
   msg.textContent=storageFiles.length?'ফাইল তালিকা আপডেট হয়েছে।':'এই ফোল্ডারে কোনো ফাইল নেই।';
- }catch(e){msg.textContent='ফাইল লোড হয়নি: '+e.message;}
+ }catch(e){msg.hidden=false;msg.textContent='ফাইল লোড হয়নি: '+e.message;}
 }
 $('#files-refresh').onclick=()=>loadFiles(true);
 $('#files-load-more').onclick=()=>loadFiles(false);

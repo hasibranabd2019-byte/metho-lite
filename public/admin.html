@@ -4,22 +4,22 @@
 <nav><button data-tab="orders" id="orders-nav-button" class="active"><span>অর্ডার</span><span id="new-orders-badge" class="new-orders-badge" hidden>0</span></button><button data-tab="courier">Steadfast কুরিয়ার</button><button data-tab="products">পণ্য</button><button data-tab="files">File Manager</button><button data-tab="design">সাইট সাজান</button><button data-tab="analytics">ভিজিটর পরিসংখ্যান</button></nav>
 <section id="orders" class="tab"></section><section id="courier" class="tab" hidden></section><section id="products" class="tab" hidden></section>
 <section id="files" class="tab" hidden>
-<div class="panel">
- <div class="bar"><div><h2>Supabase ফাইল ম্যানেজার</h2><p class="hint">metho-lite-assets · Preview-এ আলাদা bucket · ফাইল ও ফোল্ডার দেখুন, সার্চ, প্রিভিউ, আপলোড ও পরিচালনা করুন। ওয়েবসাইটে ব্যবহৃত ফাইল সুরক্ষিত থাকবে।</p></div><button id="files-refresh" class="secondary" type="button">রিফ্রেশ</button></div>
- <div id="files-usage" class="hint"></div>
- <div class="two" style="margin-top:12px">
-  <div><label for="files-search">ফাইল খুঁজুন</label><input id="files-search" placeholder="ফাইলের নাম লিখুন"></div>
-  <div><label for="files-prefix">ফোল্ডার পথ</label><input id="files-prefix" placeholder="খালি রাখলে মূল ফোল্ডার"><div class="bar"><button id="files-open-prefix" class="secondary" type="button">ফোল্ডার খুলুন</button><button id="files-root" class="secondary" type="button">মূল ফোল্ডার</button><button id="files-up" class="secondary" type="button">উপরের ফোল্ডার</button></div></div>
+<div class="file-manager-shell">
+ <div class="toolbar"><div><h2>Supabase ফাইল ম্যানেজার</h2><p class="muted">metho-lite-assets · Preview-এ আলাদা bucket · ফাইল ও ফোল্ডার দেখুন, সার্চ, প্রিভিউ, আপলোড ও পরিচালনা করুন। ওয়েবসাইটে ব্যবহৃত ফাইল সুরক্ষিত থাকবে।</p></div><button id="files-refresh" class="admin-btn gold" type="button">রিফ্রেশ</button></div>
+ <div id="files-usage" class="muted"></div>
+ <div class="grid2" style="margin-top:12px">
+  <div><label for="files-search">ফাইল খুঁজুন</label><input class="admin-input" id="files-search" placeholder="ফাইলের নাম লিখুন"></div>
+  <div><label for="files-prefix">ফোল্ডার পথ</label><input class="admin-input" id="files-prefix" placeholder="খালি রাখলে মূল ফোল্ডার"><div class="toolbar"><button id="files-open-prefix" class="admin-btn" type="button">ফোল্ডার খুলুন</button><button id="files-root" class="admin-btn" type="button">মূল ফোল্ডার</button><button id="files-up" class="admin-btn" type="button">উপরের ফোল্ডার</button></div></div>
  </div>
- <p id="files-summary" class="hint">ফাইল লোড হয়নি।</p><span id="files-path" class="hint">মূল ফোল্ডার</span>
- <div class="bar"><label><input id="files-select-all" type="checkbox"> সব ফাইল নির্বাচন</label><button id="files-delete-selected" class="secondary" type="button" disabled>নির্বাচিত ফাইল ডিলিট</button></div>
- <div class="two">
-  <label>ফাইল আপলোড<input id="files-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" multiple><small class="hint">JPG, PNG, WebP, AVIF বা GIF · প্রতি ফাইল সর্বোচ্চ ১০ MB</small></label>
-  <div class="bar" style="align-items:end"><button id="folder-create" class="secondary" type="button">＋ নতুন ফোল্ডার</button></div>
+ <p id="files-summary" class="muted">ফাইল লোড হয়নি।</p><span id="files-path" class="muted">মূল ফোল্ডার</span>
+ <div class="toolbar"><label><input id="files-select-all" type="checkbox"> সব ফাইল নির্বাচন</label><button id="files-delete-selected" class="admin-btn reject-btn" type="button" disabled>নির্বাচিত ফাইল ডিলিট</button></div>
+ <div class="grid2">
+  <label class="upload-control">ফাইল আপলোড<input class="admin-input" id="files-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" multiple><small class="muted">JPG, PNG, WebP, AVIF বা GIF · প্রতি ফাইল সর্বোচ্চ ১০ MB</small></label>
+  <div class="toolbar" style="align-items:end"><button id="folder-create" class="admin-btn" type="button">＋ নতুন ফোল্ডার</button></div>
  </div>
- <p id="files-message" class="hint" role="status" aria-live="polite"></p>
+ <div id="files-message" class="admin-msg" hidden role="status" aria-live="polite"></div>
  <div id="files-grid" class="file-manager-grid">ফাইল লোড হচ্ছে…</div>
- <div class="bar"><button id="files-load-more" class="secondary" type="button" hidden>আরও ফাইল দেখুন</button></div>
+ <div class="toolbar"><button id="files-load-more" class="admin-btn" type="button" hidden>আরও ফাইল দেখুন</button></div>
 </div></section><section id="design" class="tab" hidden><div class="panel"><h2>সাইট সাজান</h2><form id="settings-form"><div class="two">
 <label>ফোন নম্বর (কল আইকন)<input name="phone" placeholder="01XXXXXXXXX"></label><label>লোগো পরিবর্তন<input id="logo-file" type="file" accept="image/png,image/jpeg,image/webp"></label>
 <label>WhatsApp লিংক<input name="whatsapp_link" placeholder="https://wa.me/8801XXXXXXXXX"></label><label>Messenger লিংক<input name="messenger_link" placeholder="https://m.me/yourpage"></label>
