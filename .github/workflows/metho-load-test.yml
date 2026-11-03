@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      BASE_URL: https://load-test-500.metho-lite.pages.dev
+      BASE_URL: https://76bd13b9.metho-lite.pages.dev
     steps:
       - name: Checkout test branch
         uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
       - name: Install k6
         uses: grafana/setup-k6-action@v1
 
-      - name: Wait for Cloudflare Preview deployment
+      - name: Verify isolated Cloudflare Preview deployment
         shell: bash
         run: |
           ready=0
