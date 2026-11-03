@@ -72,13 +72,12 @@
 .quantity-stepper .quantity-label{font-size:12px;font-weight:600;color:#687768;white-space:nowrap;margin:0 2px 0 5px}
 .order-success-actions{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin:14px auto 2px}.order-success-actions .invoice-download-btn,.order-success-actions .go-top-btn{width:auto;min-width:115px;padding:9px 16px;border-radius:8px;font:600 13px "Noto Sans Bengali",sans-serif;white-space:nowrap}.order-success-actions .invoice-download-btn{background:#198b50;color:#fff}.order-success-actions .go-top-btn{background:#198b50;color:#fff}
 
-.brand-copy{display:flex;flex-direction:column;align-items:flex-start;line-height:1}
-.brand-letters{display:flex;align-items:baseline;white-space:nowrap}
+.brand-copy{display:flex;flex-direction:column;align-items:flex-start;line-height:1;color:inherit;font:inherit}
+.brand-letters{display:flex;align-items:baseline;gap:0;margin:0;color:inherit;font:inherit;font-weight:700;white-space:nowrap}
 .brand-letters span{display:inline-block;opacity:0;transform:translateY(7px);animation:brand-letter-reveal .48s cubic-bezier(.2,.7,.2,1) forwards}
 .brand-letters span:nth-child(1){animation-delay:.12s}
-.brand-letters span:nth-child(2){animation-delay:.34s}
-.brand-letters span:nth-child(3){animation-delay:.56s}
-.brand-copy small{display:block;margin-top:5px;color:#333;font-size:10px;font-weight:400;letter-spacing:.35px;opacity:0;animation:brand-tagline-fade .7s ease-out 1.25s forwards}
+.brand-letters span:nth-child(2){animation-delay:.42s}
+.brand-copy small{display:block;margin-top:5px;color:#333;font-size:10px;font-weight:400;letter-spacing:0;line-height:1.2;opacity:0;animation:brand-tagline-fade .7s ease-out 1.15s forwards}
 @keyframes brand-letter-reveal{to{opacity:1;transform:translateY(0)}}
 @keyframes brand-tagline-fade{to{opacity:.78}}
 @media(max-width:620px){.brand-copy small{font-size:9px;margin-top:4px}}
