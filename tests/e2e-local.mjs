@@ -203,13 +203,19 @@ await test('Accepted orders remain excluded from courier until explicitly activa
   });
   assert.equal(accepted.response.status, 200);
   const queue = await request('/api/admin/courier/orders', { cookie: adminCookie });
-  assert.ok(!queue.data.orders.some(x => x.id === order.id));
+  const queuedInactive = queue.data.orders.find(x => x.id === order.id);
+  assert.ok(queuedInactive);
+  assert.equal(queuedInactive.courier_disabled, 1);
+  const blockedSend = await request('/api/admin/orders/' + order.id + '/steadfast', {
+    method: 'POST', cookie: adminCookie, body: {}
+  });
+  assert.equal(blockedSend.response.status, 409);
   const activated = await request('/api/admin/orders/' + order.id, {
     method: 'PATCH', cookie: adminCookie, body: { courier_disabled: false }
   });
   assert.equal(activated.response.status, 200);
   const queueAfter = await request('/api/admin/courier/orders', { cookie: adminCookie });
-  assert.ok(queueAfter.data.orders.some(x => x.id === order.id));
+  assert.equal(queueAfter.data.orders.find(x => x.id === order.id).courier_disabled, 0);
   assert.equal(queueAfter.data.courier_configured, false);
 });
 await test('Stock is reserved on order creation and never goes below zero', async () => {
