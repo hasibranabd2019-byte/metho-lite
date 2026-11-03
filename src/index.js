@@ -37,7 +37,8 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
    let logoValue=logoRow?.value;try{logoValue=JSON.parse(logoValue);}catch{}
    const candidates=[...ps.results.map(x=>({type:'product',id:String(x.id),value:x.image_url})),...bs.results.map(x=>({type:'banner',id:String(x.id),value:x.image_url}))];
    if(typeof logoValue==='string'&&logoValue.startsWith('data:image/'))candidates.push({type:'logo',id:'logo_url',value:logoValue});
-   if(dryRun)return json({dry_run:true,limit_per_type:limit,pending:{products:ps.results.length,banners:bs.results.length,logo:candidates.some(x=>x.type==='logo')?1:0},total_candidates:candidates.length,backup:'প্রতিটি আসল ছবি Storage-এ রেখে backup reference তৈরি হবে; Base64 আর D1-এ থাকবে না।',next_step:'POST-এ dry_run:false এবং confirm:true দিয়ে সর্বোচ্চ নির্ধারিত batch চালান।'});
+   candidates.splice(limit);
+   if(dryRun)return json({dry_run:true,batch_limit:limit,batch_candidates:candidates.length,backup:'প্রতিটি আসল ছবি Storage-এ রেখে backup reference তৈরি হবে; Base64 আর D1-এ থাকবে না।',next_step:'POST-এ dry_run:false এবং confirm:true দিয়ে সর্বোচ্চ নির্ধারিত batch চালান।'});
    if(d?.confirm!==true)return error('স্থানান্তরের জন্য confirm:true প্রয়োজন।',400);
    await env.DB.prepare("CREATE TABLE IF NOT EXISTS media_migration_backups (id INTEGER PRIMARY KEY AUTOINCREMENT,entity_type TEXT NOT NULL,entity_id TEXT NOT NULL,original_storage_url TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,UNIQUE(entity_type,entity_id))").run();
    const migrated={products:0,banners:0,logo:0},failed=[];
