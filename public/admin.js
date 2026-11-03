@@ -23,9 +23,79 @@ async function loadAnalytics(){try{const d=await api('/api/admin/analytics');$('
 $('#analytics-refresh').onclick=loadAnalytics;
 init();
 
-let filePrefix='';
-async function loadFiles(){try{$('#files-msg').textContent='';const d=await api('/api/admin/files?prefix='+encodeURIComponent(filePrefix));$('#files-path').textContent=filePrefix||'মূল ফোল্ডার';$('#files-usage').textContent='এই ফোল্ডারে ব্যবহৃত: '+(Number(d.used_bytes||0)/1048576).toFixed(2)+' MB';const q=($('#files-search').value||'').toLowerCase();const items=(d.files||[]).filter(x=>x.name!=='.folder.png'&&x.name.toLowerCase().includes(q));$('#files-grid').innerHTML=items.map(x=>{const path=(filePrefix?filePrefix+'/':'')+x.name,url=d.public_base+path.split('/').map(encodeURIComponent).join('/');return '<article class="panel"><label><input type="checkbox" data-file="'+esc(path)+'"> নির্বাচন</label>'+(x.isFolder?'<button class="secondary" data-folder="'+esc(x.name)+'">📁 '+esc(x.name)+'</button>':'<a href="'+esc(url)+'" target="_blank" rel="noopener"><img src="'+esc(url)+'" alt="" loading="lazy" style="width:100%;aspect-ratio:4/3;object-fit:cover"></a><p>'+esc(x.name)+'</p><small>'+((Number(x.metadata?.size||0)/1024).toFixed(1))+' KB</small><p><a href="'+esc(url)+'" download>ডাউনলোড</a></p><button class="secondary" data-rename="'+esc(path)+'">Rename</button>')+'</article>';}).join('')||'<p class="hint">এই ফোল্ডারে ফাইল নেই।</p>';$('#files-grid').querySelectorAll('[data-folder]').forEach(b=>b.onclick=()=>{filePrefix+=(filePrefix?'/':'')+b.dataset.folder;loadFiles();});$('#files-grid').querySelectorAll('[data-rename]').forEach(b=>b.onclick=async()=>{const from=b.dataset.rename,old=from.split('/').pop(),name=prompt('নতুন নাম দিন',old);if(!name||name===old)return;try{await api('/api/admin/files/rename',{method:'POST',body:JSON.stringify({from,to:(filePrefix?filePrefix+'/':'')+name})});loadFiles();}catch(e){alert(e.message);}});$('#files-grid').querySelectorAll('[data-file]').forEach(x=>x.onchange=()=>$('#files-delete').disabled=!$('#files-grid').querySelector('[data-file]:checked'));}catch(e){$('#files-msg').textContent=e.message;}}
-$('#files-refresh').onclick=loadFiles;$('#files-migrate-legacy').onclick=async()=>{const b=$('#files-migrate-legacy'),msg=$('#files-msg');b.disabled=true;b.textContent='যাচাই হচ্ছে…';try{const preview=await api('/api/admin/media/migrate-legacy',{method:'POST',body:JSON.stringify({dry_run:true,limit:5})}),count=Number(preview.batch_candidates||0);if(!count){msg.textContent='স্থানান্তরের জন্য কোনো Base64 ছবি পাওয়া যায়নি।';return;}if(!confirm(count+'টি পুরোনো ছবি নিরাপদে Storage-এ স্থানান্তর করবেন? আগে Storage backup তৈরি হবে; সফল হলে D1-এ ছবির URL বদলাবে।'))return;b.textContent='স্থানান্তর হচ্ছে…';const r=await api('/api/admin/media/migrate-legacy',{method:'POST',body:JSON.stringify({dry_run:false,confirm:true,limit:5})}),n=r.migrated||{};msg.textContent='স্থানান্তর সম্পন্ন: পণ্য '+(n.products||0)+', ব্যানার '+(n.banners||0)+', লোগো '+(n.logo||0)+(r.failed?.length?'। ব্যর্থ: '+r.failed.length+' — '+r.failed.map(x=>x.message).join('; '):'');}catch(e){msg.textContent=e.message;}finally{b.disabled=false;b.textContent='পুরোনো ছবি স্থানান্তর';loadFiles();}};$('#files-search').oninput=loadFiles;$('#files-up').onclick=()=>{filePrefix=filePrefix.includes('/')?filePrefix.split('/').slice(0,-1).join('/') : '';loadFiles();};
-$('#folder-create').onclick=async()=>{const name=prompt('ফোল্ডারের নাম দিন');if(!name)return;try{await api('/api/admin/files/folder',{method:'POST',body:JSON.stringify({path:(filePrefix?filePrefix+'/':'')+name})});loadFiles();}catch(e){alert(e.message);}};
-$('#files-upload').onchange=async e=>{for(const f of e.target.files){try{if(f.size>10485760)throw Error('প্রতি ফাইল সর্বোচ্চ ১০ MB।');const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});await api('/api/admin/files/upload',{method:'POST',body:JSON.stringify({name:f.name.replace(/[^a-zA-Z0-9._ -]/g,'_'),folder:filePrefix,mime:f.type,data})});}catch(x){alert(f.name+': '+x.message);}}e.target.value='';loadFiles();};
-$('#files-delete').onclick=async()=>{const paths=[...$('#files-grid').querySelectorAll('[data-file]:checked')].map(x=>x.dataset.file);if(!paths.length||!confirm(paths.length+'টি ফাইল মুছবেন?'))return;try{await api('/api/admin/files/delete',{method:'POST',body:JSON.stringify({paths})});loadFiles();}catch(e){alert(e.message);}};
+let filePrefix='',filesOffset=0,filesHasMore=false,filesPublicBase='',storageFiles=[];
+const selectedStoragePaths=new Set();
+const fileSizeLabel=n=>{n=Number(n)||0;if(n<1024)return n+' B';if(n<1024*1024)return (n/1024).toFixed(1)+' KB';return (n/1024/1024).toFixed(2)+' MB';};
+function renderFiles(){
+ const q=($('#files-search').value||'').trim().toLowerCase();
+ const rows=storageFiles.filter(f=>!q||f.name.toLowerCase().includes(q)||String(f.path||'').toLowerCase().includes(q));
+ $('#files-summary').textContent='Bucket: metho-lite-assets • '+rows.length+'টি দেখানো হচ্ছে'+(storageFiles.length!==rows.length?' (মোট লোড '+storageFiles.length+')':'')+' • ফোল্ডার: '+(filePrefix||'/');
+ $('#files-grid').innerHTML=rows.length?rows.map(f=>{
+  const path=f.path||(filePrefix?filePrefix+'/':'')+f.name;
+  const url=f.url||filesPublicBase+path.split('/').map(encodeURIComponent).join('/');
+  if(f.isFolder)return '<div class="storage-file folder"><div style="font-size:44px;text-align:center;padding:24px">📁</div><div class="file-name">'+esc(f.name)+'</div><div class="file-actions"><span class="file-meta">ফোল্ডার</span><button type="button" class="secondary" data-folder="'+esc(path)+'">খুলুন</button></div></div>';
+  return '<div class="storage-file '+(f.used?'used':'')+'"><a href="'+esc(url)+'" target="_blank" rel="noopener" aria-label="ছবি খুলুন: '+esc(f.name)+'"><img src="'+esc(url)+'" alt="'+esc(f.name)+'" loading="lazy" onerror="this.style.display=\'none\'"></a><div class="file-name">'+esc(f.name)+'</div><div class="file-meta">'+fileSizeLabel(f.metadata?.size||f.size)+(f.metadata?.mimetype||f.mime?' • '+esc(f.metadata?.mimetype||f.mime):'')+'</div>'+(f.used?'<div class="used-label">✓ ওয়েবসাইটে ব্যবহৃত — সুরক্ষিত</div>':'<div class="file-meta">ওয়েবসাইটে ব্যবহারের রেফারেন্স পাওয়া যায়নি</div>')+'<div class="file-actions"><label title="নির্বাচন"><input type="checkbox" data-file-check="'+esc(path)+'" '+(f.used?'disabled':'')+' '+(selectedStoragePaths.has(path)?'checked':'')+'></label><div><a class="secondary" href="'+esc(url)+'" target="_blank" rel="noopener">দেখুন</a> <a class="secondary" href="'+esc(url)+'" download>ডাউনলোড</a></div></div><div class="file-actions"><button type="button" class="secondary" data-rename="'+esc(path)+'" '+(f.used?'disabled':'')+'>নাম পরিবর্তন</button></div></div>';
+ }).join(''):'<p class="hint">এই ফোল্ডারে কোনো ফাইল পাওয়া যায়নি।</p>';
+ const selectable=rows.filter(x=>!x.isFolder&&!x.used);
+ const selectedCount=selectable.filter(x=>selectedStoragePaths.has(x.path||(filePrefix?filePrefix+'/':'')+x.name)).length;
+ $('#files-delete-selected').disabled=selectedStoragePaths.size===0;
+ $('#files-select-all').checked=selectable.length>0&&selectedCount===selectable.length;
+}
+async function loadFiles(reset=true){
+ const msg=$('#files-message');msg.textContent='Supabase থেকে ফাইল লোড হচ্ছে…';
+ if(reset){storageFiles=[];filesOffset=0;selectedStoragePaths.clear();filePrefix=$('#files-prefix').value.trim().replace(/^\/+|\/+$/g,'');}
+ try{
+  const d=await api('/api/admin/files?prefix='+encodeURIComponent(filePrefix)+'&offset='+filesOffset);
+  const incoming=(d.files||[]).filter(x=>x.name!=='.folder.png');
+  storageFiles.push(...incoming);filesOffset+=incoming.length;filesHasMore=!!d.hasMore;filesPublicBase=d.public_base||filesPublicBase;
+  $('#files-prefix').value=filePrefix;$('#files-path').textContent=filePrefix||'মূল ফোল্ডার';
+  $('#files-usage').textContent='এই তালিকায় ব্যবহৃত Storage: '+(Number(d.used_bytes||0)/1048576).toFixed(2)+' MB';
+  $('#files-load-more').hidden=!filesHasMore;renderFiles();
+  msg.textContent=storageFiles.length?'ফাইল তালিকা আপডেট হয়েছে।':'এই ফোল্ডারে কোনো ফাইল নেই।';
+ }catch(e){msg.textContent='ফাইল লোড হয়নি: '+e.message;}
+}
+$('#files-refresh').onclick=()=>loadFiles(true);
+$('#files-load-more').onclick=()=>loadFiles(false);
+$('#files-search').oninput=renderFiles;
+$('#files-open-prefix').onclick=()=>loadFiles(true);
+$('#files-root').onclick=()=>{$('#files-prefix').value='';loadFiles(true);};
+$('#files-up').onclick=()=>{$('#files-prefix').value=filePrefix.includes('/')?filePrefix.split('/').slice(0,-1).join('/'):' ';if($('#files-prefix').value===' ')$('#files-prefix').value='';loadFiles(true);};
+$('#files-grid').addEventListener('click',async e=>{
+ const folder=e.target.closest('[data-folder]');
+ if(folder){$('#files-prefix').value=folder.dataset.folder;loadFiles(true);return;}
+ const rename=e.target.closest('[data-rename]');
+ if(rename){const from=rename.dataset.rename,old=from.split('/').pop(),name=prompt('নতুন নাম দিন',old);if(!name||name===old)return;try{await api('/api/admin/files/rename',{method:'POST',body:JSON.stringify({from,to:(filePrefix?filePrefix+'/':'')+name})});selectedStoragePaths.delete(from);await loadFiles(true);}catch(x){alert(x.message);}}
+});
+$('#files-grid').addEventListener('change',e=>{
+ if(e.target.matches('[data-file-check]')){const path=e.target.dataset.fileCheck;if(e.target.checked)selectedStoragePaths.add(path);else selectedStoragePaths.delete(path);renderFiles();}
+});
+$('#files-select-all').onchange=e=>{
+ const q=($('#files-search').value||'').trim().toLowerCase();
+ storageFiles.filter(f=>!f.isFolder&&!f.used&&(!q||f.name.toLowerCase().includes(q)||String(f.path||'').toLowerCase().includes(q))).forEach(f=>{const path=f.path||(filePrefix?filePrefix+'/':'')+f.name;if(e.target.checked)selectedStoragePaths.add(path);else selectedStoragePaths.delete(path);});
+ renderFiles();
+};
+$('#files-delete-selected').onclick=async()=>{
+ const paths=[...selectedStoragePaths];if(!paths.length)return;
+ if(!confirm(paths.length+'টি ফাইল স্থায়ীভাবে Supabase থেকে ডিলিট করবেন? এই কাজ ফিরিয়ে আনা যাবে না।'))return;
+ const m=$('#files-message');m.textContent='ফাইল ডিলিট হচ্ছে…';
+ try{const d=await api('/api/admin/files/delete',{method:'POST',body:JSON.stringify({paths})});selectedStoragePaths.clear();m.textContent=(d.deleted||paths.length)+'টি ফাইল ডিলিট হয়েছে।';await loadFiles(true);}
+ catch(e){m.textContent='ডিলিট হয়নি: '+e.message;}
+};
+$('#folder-create').onclick=async()=>{
+ const name=prompt('ফোল্ডারের নাম দিন');if(!name)return;
+ try{await api('/api/admin/files/folder',{method:'POST',body:JSON.stringify({path:(filePrefix?filePrefix+'/':'')+name})});await loadFiles(true);}
+ catch(e){alert(e.message);}
+};
+$('#files-upload').onchange=async e=>{
+ const files=[...e.target.files||[]],m=$('#files-message');
+ for(const f of files){
+  try{
+   if(f.size>10485760)throw Error('প্রতি ফাইল সর্বোচ্চ ১০ MB।');
+   if(!['image/jpeg','image/png','image/webp','image/avif','image/gif'].includes(f.type))throw Error('JPG, PNG, WebP, AVIF অথবা GIF নির্বাচন করুন।');
+   const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});
+   await api('/api/admin/files/upload',{method:'POST',body:JSON.stringify({name:f.name.replace(/[^a-zA-Z0-9._ -]/g,'_'),folder:filePrefix,mime:f.type,data})});
+   m.textContent=f.name+' আপলোড হয়েছে।';
+  }catch(x){m.textContent=f.name+' আপলোড হয়নি: '+x.message;}
+ }
+ e.target.value='';await loadFiles(true);
+};

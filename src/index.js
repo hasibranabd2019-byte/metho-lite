@@ -74,8 +74,42 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
   const headers={apikey:key,authorization:'Bearer '+key,'content-type':'application/json'};
   const trimSlashes=s=>{s=String(s||'');while(s.startsWith('/'))s=s.slice(1);while(s.endsWith('/'))s=s.slice(0,-1);return s;};const safePath=s=>{s=trimSlashes(s);if(!s||s.length>500||s.split('/').some(x=>!x||x==='.'||x==='..'||x.indexOf(String.fromCharCode(92))>=0||Array.from(x).some(c=>c.charCodeAt(0)<32)))return null;return s;};
   const storage=async(path,method='GET',body)=>fetch(base+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)});
-  if(p==='/api/admin/files'&&m==='GET'){const prefix=trimSlashes(u.searchParams.get('prefix'));if(prefix.length>400||prefix.split('/').some(x=>x==='..'))return error('ফোল্ডারের পথ সঠিক নয়।');const r=await storage('/object/list/'+bucket,'POST',{prefix:prefix?prefix+'/':'',limit:100,offset:0,sortBy:{column:'name',order:'asc'}});const d=await r.json().catch(()=>({}));if(!r.ok)return error(d.message||'ফাইল তালিকা আনা যায়নি।',r.status);const files=(d||[]).filter(x=>x.name).map(x=>({name:x.name,id:x.id||null,metadata:x.metadata||{},created_at:x.created_at||x.updated_at||null,isFolder:!x.id&&!x.metadata}));const used=files.reduce((n,x)=>n+Number(x.metadata?.size||0),0);return json({prefix,files,used_bytes:used,public_base:base+'/object/public/'+bucket+'/'});}
-  if(p==='/api/admin/files/upload'&&m==='POST'){const d=await readBody(req),name=String(d?.name||''),folder=trimSlashes(d?.folder);const mime=String(d?.mime||'');if(!/^[a-zA-Z0-9._ -]{1,150}$/.test(name)||!['image/jpeg','image/png','image/webp','image/avif','image/gif'].includes(mime)||typeof d?.data!=='string'||d.data.length>14000000)return error('ফাইলের নাম, ধরন বা আকার সঠিক নয়।');const path=safePath((folder?folder+'/':'')+name);if(!path)return error('ফাইলের পথ সঠিক নয়।');let raw;try{raw=Uint8Array.from(atob(d.data.replace(/^data:[^,]+,/,'').replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}catch{return error('ফাইল পড়া যায়নি।');}if(!raw.length||raw.length>10485760)return error('ফাইল সর্বোচ্চ ১০ MB হতে পারবে।');const r=await fetch(base+'/object/'+bucket+'/'+path.split('/').map(encodeURIComponent).join('/'),{method:'POST',headers:{apikey:key,authorization:'Bearer '+key,'content-type':mime,'x-upsert':'true'},body:raw});const d2=await r.json().catch(()=>({}));if(!r.ok)return error(d2.message||'আপলোড ব্যর্থ হয়েছে।',r.status);return json({ok:true,path,url:base+'/object/public/'+bucket+'/'+path.split('/').map(encodeURIComponent).join('/')});}
+  if(p==='/api/admin/files'&&m==='GET'){
+   const prefix=trimSlashes(u.searchParams.get('prefix'));
+   if(prefix.length>400||prefix.split('/').some(x=>x==='..'))return error('ফোল্ডারের পথ সঠিক নয়।');
+   const offset=Math.max(0,Math.min(100000,Number.parseInt(u.searchParams.get('offset')||'0',10)||0));
+   const r=await storage('/object/list/'+bucket,'POST',{prefix:prefix?prefix+'/':'',limit:100,offset,sortBy:{column:'created_at',order:'desc'}});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok)return error(d.message||'ফাইল তালিকা আনা যায়নি।',r.status);
+   const [products,settings,banners]=await Promise.all([
+    env.DB.prepare('SELECT image_url FROM products').all(),
+    env.DB.prepare('SELECT value FROM site_settings').all(),
+    env.DB.prepare('SELECT image_url FROM hero_banners').all()
+   ]);
+   const usedUrls=new Set();
+   const collectUrls=(value,depth=0)=>{
+    if(depth>6||value==null)return;
+    if(typeof value==='string'){
+     const s=value.trim();
+     if(/^https?:\/\//i.test(s)){usedUrls.add(s.split('?')[0]);return;}
+     try{const parsed=JSON.parse(s);if(parsed!==value)collectUrls(parsed,depth+1);}catch{}
+    }else if(Array.isArray(value))value.forEach(x=>collectUrls(x,depth+1));
+    else if(typeof value==='object')Object.values(value).forEach(x=>collectUrls(x,depth+1));
+   };
+   products.results.forEach(x=>collectUrls(x.image_url));
+   settings.results.forEach(x=>collectUrls(x.value));
+   banners.results.forEach(x=>collectUrls(x.image_url));
+   const publicBase=base+'/object/public/'+bucket+'/';
+   const files=(Array.isArray(d)?d:[]).filter(x=>x.name).map(x=>{
+    const name=String(x.name),path=[prefix,name].filter(Boolean).join('/');
+    const isFolder=!x.id&&!x.metadata;
+    const url=publicBase+path.split('/').map(encodeURIComponent).join('/');
+    return {name,path,id:x.id||null,metadata:x.metadata||{},created_at:x.created_at||x.updated_at||null,isFolder,url:isFolder?'':url,used:!isFolder&&usedUrls.has(url)};
+   });
+   const usedBytes=files.reduce((n,x)=>n+Number(x.metadata?.size||0),0);
+   return json({prefix,files,used_bytes:usedBytes,public_base:publicBase,offset,hasMore:Array.isArray(d)&&d.length===100});
+  }
+if(p==='/api/admin/files/upload'&&m==='POST'){const d=await readBody(req),name=String(d?.name||''),folder=trimSlashes(d?.folder);const mime=String(d?.mime||'');if(!/^[a-zA-Z0-9._ -]{1,150}$/.test(name)||!['image/jpeg','image/png','image/webp','image/avif','image/gif'].includes(mime)||typeof d?.data!=='string'||d.data.length>14000000)return error('ফাইলের নাম, ধরন বা আকার সঠিক নয়।');const path=safePath((folder?folder+'/':'')+name);if(!path)return error('ফাইলের পথ সঠিক নয়।');let raw;try{raw=Uint8Array.from(atob(d.data.replace(/^data:[^,]+,/,'').replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));}catch{return error('ফাইল পড়া যায়নি।');}if(!raw.length||raw.length>10485760)return error('ফাইল সর্বোচ্চ ১০ MB হতে পারবে।');const r=await fetch(base+'/object/'+bucket+'/'+path.split('/').map(encodeURIComponent).join('/'),{method:'POST',headers:{apikey:key,authorization:'Bearer '+key,'content-type':mime,'x-upsert':'true'},body:raw});const d2=await r.json().catch(()=>({}));if(!r.ok)return error(d2.message||'আপলোড ব্যর্থ হয়েছে।',r.status);return json({ok:true,path,url:base+'/object/public/'+bucket+'/'+path.split('/').map(encodeURIComponent).join('/')});}
   if(p==='/api/admin/files/folder'&&m==='POST'){const d=await readBody(req),raw=String(d?.path||''),path=safePath(raw),parts=path?path.split('/'):[];if(!path||parts.some(x=>! /^[a-zA-Z0-9._ -]{1,80}$/.test(x)))return error('ফোল্ডারের নাম সঠিক নয়।');const png=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/n2cAAAAASUVORK5CYII='),c=>c.charCodeAt(0));const r=await fetch(base+'/object/'+bucket+'/'+(path+'/.folder.png').split('/').map(encodeURIComponent).join('/'),{method:'POST',headers:{apikey:key,authorization:'Bearer '+key,'content-type':'image/png','x-upsert':'true'},body:png});const d2=await r.json().catch(()=>({}));if(!r.ok)return error(d2.message||'ফোল্ডার তৈরি করা যায়নি।',r.status);return json({ok:true});}
   if(p==='/api/admin/files/rename'&&m==='POST'){const d=await readBody(req),from=safePath(d?.from),to=safePath(d?.to);if(!from||!to)return error('ফাইলের নাম সঠিক নয়।');const oldUrl=base+'/object/public/'+bucket+'/'+from.split('/').map(encodeURIComponent).join('/');const refs=await Promise.all([env.DB.prepare('SELECT image_url FROM products').all(),env.DB.prepare("SELECT value FROM site_settings WHERE key='logo_url'").first(),env.DB.prepare('SELECT image_url FROM hero_banners').all()]);const used=[...refs[0].results.map(x=>x.image_url),refs[1]?.value,...refs[2].results.map(x=>x.image_url)].some(x=>String(x||'').includes(oldUrl));if(used)return error('এই ফাইলটি বর্তমানে ওয়েবসাইটে ব্যবহৃত হচ্ছে। আগে ছবির রেফারেন্স পরিবর্তন করুন।',409);const r=await storage('/object/move','POST',{bucketId:bucket,sourceKey:from,destinationKey:to});const d2=await r.json().catch(()=>({}));if(!r.ok)return error(d2.message||'নাম পরিবর্তন করা যায়নি।',r.status);return json({ok:true});}
   if(p==='/api/admin/files/delete'&&m==='POST'){const d=await readBody(req),paths=Array.isArray(d?.paths)?d.paths:[];if(!paths.length||paths.length>50)return error('এক থেকে ৫০টি ফাইল নির্বাচন করুন।');const clean=paths.map(safePath);if(clean.some(x=>!x))return error('ফাইলের পথ সঠিক নয়।');const refs=await Promise.all([env.DB.prepare('SELECT image_url FROM products').all(),env.DB.prepare("SELECT value FROM site_settings WHERE key='logo_url'").first(),env.DB.prepare('SELECT image_url FROM hero_banners').all()]);const urls=[...refs[0].results.map(x=>x.image_url),refs[1]?.value,...refs[2].results.map(x=>x.image_url)].map(x=>String(x||''));for(const path of clean){const url=base+'/object/public/'+bucket+'/'+path.split('/').map(encodeURIComponent).join('/');if(urls.some(x=>x.includes(url)))return error('নির্বাচিত ফাইলের মধ্যে ওয়েবসাইটে ব্যবহৃত ছবি আছে। আগে রেফারেন্স পরিবর্তন করুন।',409);}const r=await fetch(base+'/object/'+bucket,{method:'DELETE',headers,body:JSON.stringify({prefixes:clean})});const d2=await r.json().catch(()=>({}));if(!r.ok)return error(d2.message||'ফাইল মুছতে সমস্যা হয়েছে।',r.status);return json({ok:true,deleted:clean.length});}
