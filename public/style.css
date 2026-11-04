@@ -40,3 +40,17 @@
   to{transform:translate3d(calc(100vw - 100%),0,0)}
 }
 @media(prefers-reduced-motion:reduce){.collection-ant-track .metho-ant{display:none}}
+
+
+/* METHO header brand: subtle text shimmer every five seconds, with a tight tagline gap. */
+.brand{gap:8px}
+.brand-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;line-height:1.08}
+.brand-copy b{display:block;font-size:25px;font-weight:800;animation:methoBrandShimmer 5s ease-in-out infinite}
+.brand-copy small{display:block;margin-top:1px;font-size:11px;font-weight:600;line-height:1.15;letter-spacing:0;color:#71816b;white-space:nowrap}
+@keyframes methoBrandShimmer{
+  0%,82%,100%{text-shadow:none;filter:none}
+  88%{text-shadow:0 0 7px rgba(255,189,0,.55),0 0 14px rgba(255,189,0,.25);filter:brightness(1.12)}
+  94%{text-shadow:0 0 3px rgba(255,189,0,.35);filter:brightness(1.04)}
+}
+@media(max-width:620px){.brand{gap:7px}.brand-copy b{font-size:22px}.brand-copy small{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.brand-copy b{animation:none}}
