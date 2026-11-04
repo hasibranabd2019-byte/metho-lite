@@ -168,16 +168,16 @@ html{scroll-behavior:smooth;scroll-padding-top:82px}
 .site-header .brand-logo-shell .piece-c{clip-path:inset(49% 49% 0 0);transform-origin:100% 0;animation-delay:.16s}
 .site-header .brand-logo-shell .piece-d{clip-path:inset(49% 0 0 49%);transform-origin:0 0;animation-delay:.24s}
 @keyframes metho-logo-assemble{
-  0%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(.82)}
+  0%{opacity:0;transform:translate3d(var(--piece-x),var(--piece-y),0) rotate(var(--piece-rotate)) scale(.82)}
   5%{opacity:1}
   24%{opacity:1;transform:translate3d(0,0,0) rotate(0) scale(1)}
   36%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(1)}
   100%{opacity:0;transform:translate3d(0,0,0) rotate(0) scale(1)}
 }
-.site-header .brand-logo-shell .piece-a{--piece-x:-11px;--piece-y:-9px}
-.site-header .brand-logo-shell .piece-b{--piece-x:11px;--piece-y:-9px}
-.site-header .brand-logo-shell .piece-c{--piece-x:-11px;--piece-y:9px}
-.site-header .brand-logo-shell .piece-d{--piece-x:11px;--piece-y:9px}
+.site-header .brand-logo-shell .piece-a{--piece-x:-11px;--piece-y:-9px;--piece-rotate:-7deg}
+.site-header .brand-logo-shell .piece-b{--piece-x:11px;--piece-y:-9px;--piece-rotate:7deg}
+.site-header .brand-logo-shell .piece-c{--piece-x:-11px;--piece-y:9px;--piece-rotate:7deg}
+.site-header .brand-logo-shell .piece-d{--piece-x:11px;--piece-y:9px;--piece-rotate:-7deg}
 .site-header .brand-logo-shell .metho-logo-piece{
   animation-name:metho-logo-assemble;
 }
