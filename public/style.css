@@ -74,12 +74,12 @@
 
 .brand-copy{display:flex;flex-direction:column;align-items:flex-start;line-height:1;color:inherit;font:inherit}
 .brand-letters{display:flex;align-items:baseline;gap:0;margin:0;color:inherit;font:inherit;font-weight:700;white-space:nowrap}
-.brand-letters span{display:inline-block;opacity:0;transform:translateY(7px);animation:brand-letter-reveal .48s cubic-bezier(.2,.7,.2,1) forwards}
+.brand-letters span{display:inline-block;opacity:0;transform:translateY(7px);animation:brand-letter-reveal 5s cubic-bezier(.2,.7,.2,1) infinite}
 .brand-letters span:nth-child(1){animation-delay:.12s}
 .brand-letters span:nth-child(2){animation-delay:.42s}
-.brand-copy small{display:block;margin-top:5px;color:#333;font-size:10px;font-weight:400;letter-spacing:0;line-height:1.2;opacity:0;animation:brand-tagline-fade .7s ease-out 1.15s forwards}
-@keyframes brand-letter-reveal{to{opacity:1;transform:translateY(0)}}
-@keyframes brand-tagline-fade{to{opacity:.78}}
+.brand-copy small{display:block;margin-top:5px;color:#333;font-size:10px;font-weight:400;letter-spacing:0;line-height:1.2;opacity:0;animation:brand-tagline-fade 5s ease-out 1.15s infinite}
+@keyframes brand-letter-reveal{0%{opacity:0;transform:translateY(7px)}10%{opacity:1;transform:translateY(0)}100%{opacity:1;transform:translateY(0)}}
+@keyframes brand-tagline-fade{0%{opacity:0}14%{opacity:.78}100%{opacity:.78}}
 @media(max-width:620px){.brand-copy small{font-size:9px;margin-top:4px}}
 @media(prefers-reduced-motion:reduce){.brand-letters span{opacity:1;transform:none;animation:none}.brand-copy small{opacity:.78;animation:none}}
 
