@@ -157,3 +157,74 @@ html{scroll-behavior:smooth;scroll-padding-top:82px}
 }
 @media(max-width:620px){.brand-logo-shell{width:44px;height:44px;flex-basis:44px}.site-header .brand img#brand-logo{width:100%;height:100%;flex-basis:100%}.metho-thread-path{height:52px}}
 @media(prefers-reduced-motion:reduce){.metho-thread-path path{animation:none!important;stroke-dasharray:var(--thread-loop) 1!important;stroke-dashoffset:calc(-1 * var(--thread-feed))!important}}
+
+
+/* METHO logo-motion reveal: geometric circular reveal, no thread */
+.brand-logo-shell{
+  position:relative;isolation:isolate;overflow:visible!important;
+}
+.site-header .brand img#brand-logo{
+  position:relative;z-index:2;
+  clip-path:circle(0% at 50% 50%);
+  opacity:.35;
+  transform:scale(.82) rotate(-18deg);
+  animation:metho-logo-reveal 5s cubic-bezier(.2,.72,.22,1) infinite!important;
+  will-change:clip-path,transform,opacity;
+}
+.brand-logo-shell::before{
+  content:"";position:absolute;z-index:1;inset:-5px;border-radius:50%;
+  border:1.5px solid rgba(25,75,38,.72);
+  opacity:0;transform:scale(.72) rotate(-35deg);
+  animation:metho-logo-ring 5s cubic-bezier(.2,.72,.22,1) infinite;
+  pointer-events:none;
+}
+.brand-logo-shell::after{
+  content:"";position:absolute;z-index:3;inset:-2px;border-radius:50%;
+  border:1px solid rgba(255,189,0,.9);
+  opacity:0;transform:scale(.86);
+  animation:metho-logo-accent 5s ease-out infinite;
+  pointer-events:none;
+}
+.brand-letters span{
+  animation:brand-letter-loop 5s cubic-bezier(.2,.7,.2,1) infinite!important;
+  will-change:transform,opacity;
+}
+.brand-letters span:nth-child(1){animation-delay:.18s!important}
+.brand-letters span:nth-child(2){animation-delay:.42s!important}
+.brand-copy small{
+  animation:brand-tagline-loop 5s ease-in-out infinite!important;
+  animation-delay:.72s!important;
+}
+@keyframes metho-logo-reveal{
+  0%{clip-path:circle(0% at 50% 50%);opacity:.35;transform:scale(.82) rotate(-18deg)}
+  18%{clip-path:circle(76% at 50% 50%);opacity:1;transform:scale(1.035) rotate(2deg)}
+  27%,78%{clip-path:circle(76% at 50% 50%);opacity:1;transform:scale(1) rotate(0)}
+  92%,100%{clip-path:circle(76% at 50% 50%);opacity:1;transform:scale(1) rotate(0)}
+}
+@keyframes metho-logo-ring{
+  0%{opacity:0;transform:scale(.72) rotate(-35deg)}
+  16%{opacity:.85;transform:scale(1.08) rotate(0)}
+  28%,72%{opacity:.28;transform:scale(1) rotate(0)}
+  88%,100%{opacity:0;transform:scale(1.12) rotate(12deg)}
+}
+@keyframes metho-logo-accent{
+  0%,12%{opacity:0;transform:scale(.86)}
+  23%{opacity:.9;transform:scale(1.12)}
+  34%,66%{opacity:0;transform:scale(1.18)}
+  100%{opacity:0;transform:scale(1.18)}
+}
+@keyframes brand-letter-loop{
+  0%{opacity:0;transform:translate3d(0,9px,0) scale(.97)}
+  16%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+  78%,100%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+}
+@keyframes brand-tagline-loop{
+  0%,8%{opacity:0;transform:translateY(4px)}
+  22%,100%{opacity:.78;transform:translateY(0)}
+}
+@media(max-width:620px){.brand-logo-shell{overflow:visible!important}}
+@media(prefers-reduced-motion:reduce){
+  .site-header .brand img#brand-logo{animation:none!important;clip-path:none!important;opacity:1!important;transform:none!important}
+  .brand-logo-shell::before,.brand-logo-shell::after{animation:none!important;opacity:0!important}
+  .brand-letters span,.brand-copy small{animation:none!important;opacity:1!important;transform:none!important}
+}
