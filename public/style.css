@@ -140,3 +140,61 @@ html{scroll-behavior:smooth;scroll-padding-top:82px}
 @media(prefers-reduced-motion:reduce){
   .brand-letters span,.brand-copy small{animation:none!important;opacity:1!important;transform:none!important}
 }
+
+
+/* Compact delivery breakdown control and tidy two-column alignment */
+.delivery-details-toggle{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:4px!important;
+  width:auto!important;
+  min-height:0!important;
+  margin:3px 0 5px auto!important;
+  padding:3px 6px!important;
+  border:1px solid #dce8d8!important;
+  border-radius:6px!important;
+  background:#fff!important;
+  color:#426448!important;
+  font:500 10px/1.25 "Noto Sans Bengali",sans-serif!important;
+  box-shadow:none!important;
+}
+.delivery-details-toggle .delivery-details-chevron{font-size:11px;line-height:1}
+.delivery-details-panel{
+  padding:8px 10px!important;
+  margin:2px 0 7px!important;
+  border:1px solid #e3ebdf;
+  border-radius:8px;
+  background:#fff;
+}
+.delivery-detail-row{
+  display:grid!important;
+  grid-template-columns:minmax(105px,38%) minmax(0,1fr)!important;
+  align-items:start!important;
+  column-gap:10px!important;
+  padding:6px 0!important;
+  border-bottom:1px solid #edf1ea;
+  font-size:12px;
+  line-height:1.5;
+}
+.delivery-detail-row:last-child{border-bottom:0}
+.delivery-detail-row>span{color:#71806e;text-align:left}
+.delivery-detail-row>strong{
+  min-width:0;
+  color:#344b36;
+  text-align:right;
+  font-weight:600;
+  overflow-wrap:anywhere;
+}
+.delivery-detail-total{
+  margin-top:2px;
+  padding-top:8px!important;
+  border-top:1px solid #dce8d8!important;
+  color:#176b32;
+}
+.delivery-detail-total>strong{color:#176b32;font-weight:800}
+.delivery-detail-hint{margin:5px 0 2px;color:#778174;font-size:11px;line-height:1.5}
+@media(max-width:380px){
+  .delivery-detail-row{grid-template-columns:minmax(92px,36%) minmax(0,1fr)!important;column-gap:7px!important;font-size:11px}
+  .delivery-details-toggle{font-size:9px!important;padding:2px 5px!important}
+}
