@@ -28,18 +28,18 @@
     const lr = shell.getBoundingClientRect();
     const cx = lr.left - hr.left + lr.width / 2;
     const cy = 30;
-    const radius = Math.min(lr.width, lr.height) / 2 - 1;
+    const radius = Math.min(lr.width, lr.height) / 2 + 2;
     const right = cx + radius;
     const left = cx - radius;
     const width = hr.width;
-    const feed = Math.max(0, width - right);
+    const feed = 12;
     const loopLength = 2 * Math.PI * radius;
     const total = feed + loopLength;
     const feedRatio = feed / total;
     const loopRatio = loopLength / total;
     svg.setAttribute('viewBox', '0 0 ' + width + ' 60');
     path.setAttribute('d',
-      'M ' + (width + 2) + ' ' + cy + ' H ' + right +
+      'M ' + (right + feed) + ' ' + cy + ' H ' + right +
       ' A ' + radius + ' ' + radius + ' 0 1 0 ' + left + ' ' + cy +
       ' A ' + radius + ' ' + radius + ' 0 1 0 ' + right + ' ' + cy
     );
