@@ -99,3 +99,8 @@ $('#files-upload').onchange=async e=>{
  }
  e.target.value='';await loadFiles(true);
 };
+
+
+// Legacy image migration: admin-session protected dry run only.
+const mediaDryRunButton=$('#media-migration-dry-run');
+if(mediaDryRunButton)mediaDryRunButton.onclick=async()=>{const out=$('#media-migration-status');mediaDryRunButton.disabled=true;out.textContent='ছবি পরীক্ষা হচ্ছে…';try{const d=await api('/api/admin/media/migrate-legacy',{method:'POST',body:JSON.stringify({dry_run:true,limit:5})});out.textContent='পরীক্ষা সম্পন্ন: '+Number(d.batch_candidates||0)+'টি ছবি এই ব্যাচে পাওয়া গেছে। এখনো কোনো ছবি স্থানান্তর বা পরিবর্তন করা হয়নি।';}catch(e){out.textContent='পরীক্ষা ব্যর্থ: '+e.message;}finally{mediaDryRunButton.disabled=false;}};
