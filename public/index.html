@@ -33,15 +33,13 @@
     const left = cx - radius;
     const width = hr.width;
     const feed = Math.max(0, width - right);
-    const loopLength = 4 * Math.PI * radius;
+    const loopLength = 2 * Math.PI * radius;
     const total = feed + loopLength;
     const feedRatio = feed / total;
     const loopRatio = loopLength / total;
     svg.setAttribute('viewBox', '0 0 ' + width + ' 60');
     path.setAttribute('d',
       'M ' + (width + 2) + ' ' + cy + ' H ' + right +
-      ' A ' + radius + ' ' + radius + ' 0 1 0 ' + left + ' ' + cy +
-      ' A ' + radius + ' ' + radius + ' 0 1 0 ' + right + ' ' + cy +
       ' A ' + radius + ' ' + radius + ' 0 1 0 ' + left + ' ' + cy +
       ' A ' + radius + ' ' + radius + ' 0 1 0 ' + right + ' ' + cy
     );
