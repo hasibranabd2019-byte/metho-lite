@@ -7,6 +7,7 @@
 <div class="file-manager-shell">
  <div class="toolbar"><div><h2>Supabase ফাইল ম্যানেজার</h2><p class="muted">metho-lite-assets · Preview-এ আলাদা bucket · ফাইল ও ফোল্ডার দেখুন, সার্চ, প্রিভিউ, আপলোড ও পরিচালনা করুন। ওয়েবসাইটে ব্যবহৃত ফাইল সুরক্ষিত থাকবে।</p></div><button id="files-refresh" class="admin-btn gold" type="button">রিফ্রেশ</button></div>
  <div id="files-usage" class="muted"></div>
+ <div class="panel" style="margin:14px 0"><h3>পুরোনো ছবি দ্রুত করার ব্যবস্থা</h3><p class="muted">D1-এ থাকা Base64 ছবি Supabase Storage-এ স্থানান্তরের আগে শুধু নিরাপদ গণনা করা হবে।</p><div class="toolbar"><button id="media-migration-dry-run" class="admin-btn" type="button">ছবি পরীক্ষা করুন (Dry Run)</button><span id="media-migration-status" class="muted" role="status" aria-live="polite"></span></div></div>
  <div class="grid2" style="margin-top:12px">
   <div><label for="files-search">ফাইল খুঁজুন</label><input class="admin-input" id="files-search" placeholder="ফাইলের নাম লিখুন"></div>
   <div><label for="files-prefix">ফোল্ডার পথ</label><input class="admin-input" id="files-prefix" placeholder="খালি রাখলে মূল ফোল্ডার"><div class="toolbar"><button id="files-open-prefix" class="admin-btn" type="button">ফোল্ডার খুলুন</button><button id="files-root" class="admin-btn" type="button">মূল ফোল্ডার</button><button id="files-up" class="admin-btn" type="button">উপরের ফোল্ডার</button></div></div>
