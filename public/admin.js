@@ -101,6 +101,8 @@ $('#files-upload').onchange=async e=>{
 };
 
 
-// Legacy image migration: admin-session protected dry run only.
+// Legacy image migration: admin-session protected dry run and confirmed migration.
 const mediaDryRunButton=$('#media-migration-dry-run');
+const mediaMigrationStart=$('#media-migration-start');
+if(mediaMigrationStart)mediaMigrationStart.onclick=async()=>{const out=$('#media-migration-status');if(!confirm('৪টি পুরোনো ছবি Supabase Storage-এ স্থানান্তর করবেন? ছবির URL আপডেট হবে; ব্যাকআপ রাখা হবে।'))return;mediaMigrationStart.disabled=true;out.textContent='ছবি স্থানান্তর হচ্ছে…';try{const d=await api('/api/admin/media/migrate-legacy',{method:'POST',body:JSON.stringify({dry_run:false,confirm:true,limit:5})});out.textContent='স্থানান্তর সম্পন্ন: '+Number(d.migrated||d.migrated_count||0)+'টি ছবি। '+(d.remaining_candidates!=null?'অবশিষ্ট: '+d.remaining_candidates+'টি।':'');}catch(e){out.textContent='স্থানান্তর ব্যর্থ: '+e.message;}finally{mediaMigrationStart.disabled=false;}};
 if(mediaDryRunButton)mediaDryRunButton.onclick=async()=>{const out=$('#media-migration-status');mediaDryRunButton.disabled=true;out.textContent='ছবি পরীক্ষা হচ্ছে…';try{const d=await api('/api/admin/media/migrate-legacy',{method:'POST',body:JSON.stringify({dry_run:true,limit:5})});out.textContent='পরীক্ষা সম্পন্ন: '+Number(d.batch_candidates||0)+'টি ছবি এই ব্যাচে পাওয়া গেছে। এখনো কোনো ছবি স্থানান্তর বা পরিবর্তন করা হয়নি।';}catch(e){out.textContent='পরীক্ষা ব্যর্থ: '+e.message;}finally{mediaDryRunButton.disabled=false;}};
