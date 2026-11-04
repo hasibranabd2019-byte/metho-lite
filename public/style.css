@@ -102,3 +102,41 @@ html{scroll-behavior:smooth;scroll-padding-top:82px}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
 /* Cloudflare Pages deployment queue re-trigger: 2026-11-04 */
+
+
+/* METHO brand refresh: polished 3-second reveal + circular green logo */
+.site-header .brand img#brand-logo{
+  width:52px;height:52px;flex:0 0 52px;aspect-ratio:1/1;
+  object-fit:cover;border:2px solid #194b26;border-radius:50%;
+  padding:2px;background:#fff;box-shadow:0 2px 7px rgba(25,75,38,.12);
+}
+.brand-copy{gap:0}
+.brand-copy small{margin-top:2px!important}
+.brand-letters span{
+  animation:brand-letter-loop 3s cubic-bezier(.2,.7,.2,1) infinite!important;
+  will-change:transform,opacity;
+}
+.brand-letters span:nth-child(1){animation-delay:0s!important}
+.brand-letters span:nth-child(2){animation-delay:.16s!important}
+.brand-copy small{
+  animation:brand-tagline-loop 3s ease-in-out infinite!important;
+  animation-delay:.42s!important;
+}
+@keyframes brand-letter-loop{
+  0%{opacity:0;transform:translate3d(0,9px,0) scale(.97)}
+  16%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+  78%{opacity:1;transform:translate3d(0,0,0) scale(1)}
+  92%,100%{opacity:0;transform:translate3d(0,-3px,0) scale(1)}
+}
+@keyframes brand-tagline-loop{
+  0%,8%{opacity:0;transform:translateY(4px)}
+  22%,78%{opacity:.78;transform:translateY(0)}
+  92%,100%{opacity:0;transform:translateY(-2px)}
+}
+@media(max-width:620px){
+  .site-header .brand img#brand-logo{width:44px;height:44px;flex-basis:44px}
+  .brand-copy small{margin-top:1px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .brand-letters span,.brand-copy small{animation:none!important;opacity:1!important;transform:none!important}
+}
