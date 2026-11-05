@@ -198,3 +198,6 @@ html{scroll-behavior:smooth;scroll-padding-top:82px}
   .delivery-detail-row{grid-template-columns:minmax(92px,36%) minmax(0,1fr)!important;column-gap:7px!important;font-size:11px}
   .delivery-details-toggle{font-size:9px!important;padding:2px 5px!important}
 }
+
+/* Cart toast text: slightly larger for readability */
+.cart-toast-text{font-size:16px}
