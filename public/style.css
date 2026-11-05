@@ -204,5 +204,5 @@ html{scroll-behavior:smooth;scroll-padding-top:82px}
 
 
 /* Briefly soften the page behind the cart confirmation; keep the cat toast crisp. */
-body.cart-toast-open> :not(#cart-toast){filter:blur(30px);transition:filter .22s ease;}
+body.cart-toast-open> :not(#cart-toast){filter:blur(15px);transition:filter .22s ease;}
 body:not(.cart-toast-open)> :not(#cart-toast){transition:filter .22s ease;}
