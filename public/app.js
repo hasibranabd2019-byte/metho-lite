@@ -17,7 +17,7 @@ root.querySelectorAll('.add').forEach(b=>{const productId=Number(b.dataset.id);u
 }catch{root.textContent='পণ্য লোড করা যাচ্ছে না। পরে আবার চেষ্টা করুন।';}}
 
 let cartToastTimer=null;function showCartToast(){let toast=$('#cart-toast');if(!toast){toast=document.createElement('div');toast.id='cart-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.className='cart-toast';document.body.appendChild(toast);}toast.innerHTML='<img class="cart-toast-cat" src="https://ghhljiclxtgzxndalztj.supabase.co/storage/v1/object/public/metho-lite-assets/1000097387.gif" alt="" aria-hidden="true" onerror="this.hidden=true"><span class="cart-toast-text">কার্টে পণ্য যোগ হয়েছে। অর্ডার সম্পন্ন করতে নিচে যান।</span>';toast.classList.remove('is-visible','is-hiding');void toast.offsetWidth;toast.classList.add('is-visible');if(cartToastTimer)clearTimeout(cartToastTimer);cartToastTimer=setTimeout(()=>{toast.classList.remove('is-visible');toast.classList.add('is-hiding');},3000);}
-function deliveryCharge(district,grams){const d=String(district||'').trim().toLowerCase().replace(/[\s।,.-]/g,'');const kg=grams/1000;if(!district||!grams)return 0;if(d==='ঝিনাইদহ'||d==='jhenaidah')return 6000+Math.max(0,Math.ceil(kg)-1)*2000;if(d==='ঢাকা'||d==='dhaka'||d==='ঢাকাশহর')return 11500+Math.max(0,Math.ceil(kg)-1)*2000;if(grams<=500)return 11500;if(grams<=1000)return 13500;return 13500+Math.max(0,Math.ceil(kg)-1)*2000;}let deliveryDetailsOpen=false;
+function deliveryCharge(district,grams){const d=String(district||'').trim().toLowerCase().replace(/[\s।,.-]/g,'');const kg=grams/1000;if(!district||!grams)return 0;if(d==='ঝিনাইদহ'||d==='jhenaidah')return 6000+Math.max(0,Math.ceil(kg)-1)*2000;if(d==='ঢাকাশহর')return 11500+Math.max(0,Math.ceil(kg)-1)*2000;if(grams<=500)return 11500;if(grams<=1000)return 13500;return 13500+Math.max(0,Math.ceil(kg)-1)*2000;}let deliveryDetailsOpen=false;
 function renderCheckoutTotals(){
  const box=$('#delivery-summary');if(!box)return;
  const subtotal=[...cart.values()].reduce((s,x)=>s+x.unit_price_paisa*x.quantity,0);
@@ -34,7 +34,7 @@ function renderCheckoutTotals(){
  if(!district||!grams){rateText='জেলা ও পণ্য নির্বাচন করলে কুরিয়ার চার্জের হিসাব দেখা যাবে।';}
  else if(normalized==='ঝিনাইদহ'||normalized==='jhenaidah'){
    rateText='প্রথম ১ কেজি '+money(6000)+' + অতিরিক্ত প্রতি কেজি '+money(2000);
- }else if(normalized==='ঢাকা'||normalized==='dhaka'||normalized==='ঢাকাশহর'){
+ }else if(normalized==='ঢাকাশহর'){
    rateText='প্রথম ১ কেজি '+money(11500)+' + অতিরিক্ত প্রতি কেজি '+money(2000);
  }else if(grams<=500){
    rateText='৫০০ গ্রাম পর্যন্ত নির্ধারিত চার্জ '+money(11500);
