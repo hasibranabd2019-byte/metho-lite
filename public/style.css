@@ -201,3 +201,8 @@ html{scroll-behavior:smooth;scroll-padding-top:82px}
 
 /* Cart toast text: slightly larger for readability */
 .cart-toast-text{font-size:16px}
+
+
+/* Briefly soften the page behind the cart confirmation; keep the cat toast crisp. */
+body.cart-toast-open> :not(#cart-toast){filter:blur(3px);transition:filter .22s ease;}
+body:not(.cart-toast-open)> :not(#cart-toast){transition:filter .22s ease;}
