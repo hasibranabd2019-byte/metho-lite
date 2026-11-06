@@ -494,12 +494,12 @@ function formatStoredAddress(address,upazila,district){
   const corporation=north.some(x=>u.includes(x))?'ঢাকা উত্তর':'ঢাকা দক্ষিণ';
   return 'এরিয়া: '+clean+', থানা: '+u+', সিটি করপোরেশন: '+corporation;
  }
- if(!u){if(d==='ঢাকার বাইরে')return 'এরিয়া: '+clean+', ডেলিভারি অঞ্চল: ঢাকার বাইরে';const area=areaOnlyDistrictNames.has(d)&&normalizeAreaText(clean)===normalizeAreaText(d)?d+' শহর':clean;return 'এরিয়া: '+area+', জেলা: '+d;}
+ if(!u){if(d==='ঢাকার বাইরে')return clean;const area=areaOnlyDistrictNames.has(d)&&normalizeAreaText(clean)===normalizeAreaText(d)?d+' শহর':clean;return 'এরিয়া: '+area+', জেলা: '+d;}
  return 'গ্রাম/এরিয়া: '+clean+', উপজেলা/থানা: '+u+', জেলা: '+d;
 }
 
 function steadfastAddress(address,upazila,district){
- const parts=[],labels={area:'',upazila:'',district:'',corporation:''};
+ const parts=[],labels={area:'',upazila:'',district:'',corporation:''};if(String(district||'').trim()==='ঢাকার বাইরে')return String(address||'').trim();
  for(const raw of String(address||'').split(/[;,،]/)){const s=raw.trim();if(!s)continue;const m=s.match(/^(গ্রাম\/এরিয়া|এরিয়া|এলাকা|উপজেলা\/থানা|উপজেলা|থানা|জেলা|সিটি করপোরেশন)\s*[:：]?\s*(.*)$/);if(m){const k=/^(গ্রাম\/এরিয়া|এরিয়া|এলাকা)$/.test(m[1])?'area':/^(উপজেলা\/থানা|উপজেলা|থানা)$/.test(m[1])?'upazila':m[1]==='জেলা'?'district':'corporation';if(m[2]&&!labels[k])labels[k]=m[2].trim();continue;}if(!parts.some(x=>x.toLocaleLowerCase()===s.toLocaleLowerCase()))parts.push(s);}
  const area=labels.area||parts.join(', '),u=labels.upazila||String(upazila||'').trim(),d=labels.district||String(district||'').trim();
  if(d==='ঢাকা (শহর)')return ['এরিয়া: '+area,u?'থানা: '+u:'','সিটি করপোরেশন: '+(labels.corporation||'ঢাকা')].filter(x=>!x.endsWith(': ')).join(', ');
