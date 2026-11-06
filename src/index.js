@@ -489,7 +489,7 @@ function formatStoredAddress(address,upazila,district){
   const corporation=north.some(x=>u.includes(x))?'ঢাকা উত্তর':'ঢাকা দক্ষিণ';
   return 'এরিয়া: '+clean+', থানা: '+u+', সিটি করপোরেশন: '+corporation;
  }
- if(!u)return 'এরিয়া: '+clean+', জেলা: '+d;
+ if(!u){const area=areaOnlyDistrictNames.has(d)&&normalizeAreaText(clean)===normalizeAreaText(d)?d+' শহর':clean;return 'এরিয়া: '+area+', জেলা: '+d;}
  return 'গ্রাম/এরিয়া: '+clean+', উপজেলা/থানা: '+u+', জেলা: '+d;
 }
 
