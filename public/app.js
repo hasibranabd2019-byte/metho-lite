@@ -112,7 +112,7 @@ function renderAddressSuggestions(){
   items.push({key,district,upazila,label:upazila?upazila+', '+district:district,matchScore:locationMatched?2:1});
  };
  for(const d of districts){
-  add(d.bn_name,'',d.bn_name,[d.name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);
+  add(d.bn_name,'',d.bn_name,[d.en_name,d.name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);
   for(const u of d.upazilas||[])add(d.bn_name,u.bn_name,u.bn_name,[u.en_name,u.name].filter(Boolean));
  }
  // Keep suggestions useful even when the external geography file is unavailable.
