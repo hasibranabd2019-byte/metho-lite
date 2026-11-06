@@ -421,7 +421,7 @@ function renderAddressSuggestions(){
  box.querySelectorAll('[data-address-suggestion]').forEach(button=>button.onclick=()=>{
   const selected=checkoutSuggestionItems[Number(button.dataset.addressSuggestion)];if(!selected)return;
   const address=$('#address'),parts=removeSelectedAreaFragments(address.value,selected);
-  const suffix=selected.upazila?(selected.district==='ঢাকা (সিটি)'?(selected.localityName?'এলাকা: '+selected.localityName+', ':'')+'থানা: '+selected.upazila+', জেলা: ঢাকা (সিটি)':'উপজেলা: '+selected.upazila+', জেলা: '+selected.district):'জেলা: '+selected.district;
+  const suffix=selected.upazila?(selected.district==='ঢাকা (সিটি)'?(selected.localityName?'এলাকা: '+selected.localityName+', ':'')+'থানা: '+selected.upazila+', জেলা: ঢাকা (সিটি)':(selected.localityName||selected.upazila)+', উপজেলা: '+selected.upazila+', জেলা: '+selected.district):'জেলা: '+selected.district;
   if(!parts.includes(selected.upazila||selected.district))address.value=parts+(parts?', ':'')+suffix;
   else if(selected.upazila&&!parts.includes(selected.district))address.value=parts+', জেলা: '+selected.district;
   checkoutSelectedAreaSuffix=suffix;checkoutSuggestedArea={district:selected.district,upazila:selected.upazila||'',suggested:true};box.hidden=true;checkoutSuggestionItems=[];updateAddressResolution();renderCheckoutTotals();address.focus();
