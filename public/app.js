@@ -21,7 +21,24 @@ let cartToastTimer=null;function showCartToast(){let toast=$('#cart-toast');if(!
 function normalizeCheckoutArea(value){return String(value||'').normalize('NFKC').toLocaleLowerCase().replace(/[০-৯]/g,x=>String('০১২৩৪৫৬৭৮৯'.indexOf(x))).replace(/(জেলা|উপজেলা|থানা|district|upazila|upzilla|thana|zila)/g,' ').replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();}
 function checkoutAreaDistance(a,b){const x=Array.from(a),y=Array.from(b);if(Math.abs(x.length-y.length)>2)return 99;let row=Array.from({length:y.length+1},(_,i)=>i);for(let i=1;i<=x.length;i++){const next=[i];for(let j=1;j<=y.length;j++)next[j]=Math.min(next[j-1]+1,row[j]+1,row[j-1]+(x[i-1]===y[j-1]?0:1));row=next;}return row[y.length];}
 function checkoutAreaHas(text,alias){const t=' '+normalizeCheckoutArea(text)+' ',a=normalizeCheckoutArea(alias);if(t.includes(' '+a+' '))return true;const words=t.trim().split(' '),parts=a.split(' ');for(let i=0;i<=words.length-parts.length;i++){if(parts.every((p,j)=>{const w=words[i+j],limit=p.length>=9?2:p.length>=5?1:0;return w===p||checkoutAreaDistance(w,p)<=limit;}))return true;}return false;}
-const CHECKOUT_SPELLING_ALIASES={'জীবননগর':['জীবন নগর','জিবন নগর','জিবননগর','jibon nogor','zibon nagar','jibon nagar','jibonnogor','jibannagar','zibonnagar','zibonnogor']};
+const CHECKOUT_SPELLING_ALIASES={
+ 'জীবননগর':['জীবন নগর','জিবন নগর','জিবননগর','jibon nogor','zibon nagar','jibon nagar','jibonnogor','jibannagar','zibonnagar','zibonnogor'],
+ 'মিরপুর':['mirpur','mir poor','meerpur','mirpur dhaka'],
+ 'পল্লবী':['pallabi','pallaby'],
+ 'রূপনগর':['rupnagar','rup nagar'],
+ 'শাহ আলী':['shah ali','shahali'],
+ 'দারুস সালাম':['darus salam','darussalam'],
+ 'কাফরুল':['kafrul'],
+ 'বাড্ডা':['badda'],
+ 'গুলশান':['gulshan'],
+ 'ধানমন্ডি':['dhanmondi'],
+ 'মোহাম্মদপুর':['mohammadpur','mohammedpur'],
+ 'উত্তরা':['uttara'],
+ 'নিউ মার্কেট':['new market','newmarket'],
+ 'ঝিনাইদহ':['jhenaidah','jhenidah'],
+ 'চুয়াডাঙ্গা':['chuadanga','chuadanga'],
+ 'ঢাকা':['dhaka']
+};
 function checkoutAreaHasName(text,name){return checkoutAreaHas(text,name)||(CHECKOUT_SPELLING_ALIASES[name]||[]).some(alias=>checkoutAreaHas(text,alias));}
 function checkoutSuggestionMatches(query,name){
  const q=normalizeCheckoutArea(query).replace(/\s+/g,''),names=[name,...(CHECKOUT_SPELLING_ALIASES[name]||[])];
@@ -63,11 +80,15 @@ let checkoutSuggestionItems=[];
 function renderAddressSuggestions(){
  const box=$('#address-suggestions'),raw=String($('#address')?.value||'').trim();
  if(!box)return;
- if(!raw||!bdTree.length){box.hidden=true;box.innerHTML='';checkoutSuggestionItems=[];return;}
+ if(!raw){box.hidden=true;box.innerHTML='';checkoutSuggestionItems=[];return;}
  const parts=raw.split(/[,;،]/).map(x=>x.trim()).filter(Boolean),lastWords=(parts.at(-1)||'').split(/\s+/).filter(Boolean),queries=[...parts.slice(-2).reverse(),lastWords.slice(-3).join(' '),lastWords.slice(-2).join(' ')].filter(Boolean),districts=bdTree.flatMap(x=>x.districts||[]),items=[];
  const add=(district,upazila,name)=>{const canonical=name||upazila||district;if(!queries.some(q=>checkoutSuggestionMatches(q,canonical)))return;const key=district+'|'+upazila;if(items.some(x=>x.key===key))return;items.push({key,district,upazila,label:upazila?upazila+', '+district:district});};
  for(const d of districts){add(d.bn_name,'',d.bn_name);for(const u of d.upazilas||[])add(d.bn_name,u.bn_name,u.bn_name);}
+ // Keep suggestions useful even when the external geography file is unavailable.
+ for(const district of CHECKOUT_DISTRICTS)add(district,'',district);
  for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (শহর)',thana,thana);
+ add('চুয়াডাঙ্গা','জীবননগর','জীবননগর');
+ add('ঝিনাইদহ','মহেশপুর','মহেশপুর');
  checkoutSuggestionItems=items.slice(0,7);
  box.innerHTML=checkoutSuggestionItems.map((x,i)=>'<button type="button" class="address-suggestion" role="option" aria-selected="false" data-address-suggestion="'+i+'"><span class="address-suggestion-name">'+esc(x.label)+'</span><small>'+(x.upazila?(x.district==='ঢাকা (শহর)'?'থানা':'উপজেলা'):'জেলা')+'</small></button>').join('');
  box.hidden=!checkoutSuggestionItems.length;
