@@ -17,7 +17,7 @@ const dhakaThanaAliases=['মিরপুর','পল্লবী','রূপন
 let addressGeoTreePromise;
 async function getAddressGeoTree(){if(!addressGeoTreePromise)addressGeoTreePromise=fetch('https://iqbalhasandev.github.io/bangladesh-geo-json/bangladesh-geo.json',{headers:{'accept':'application/json'}}).then(r=>{if(!r.ok)throw new Error('Geo data unavailable');return r.json();}).catch(e=>{addressGeoTreePromise=null;throw e;});return addressGeoTreePromise;}
 async function resolveAddressArea(address,providedDistrict='',providedUpazila=''){
- const raw=String(address||''),explicitDistrict=String(raw.match(/(?:জেলা|district)\\s*[:：-]?\\s*([^,;،]+)/i)?.[1]||'').trim(),explicitUpazila=String(raw.match(/(?:উপজেলা|upazila|upzilla|থানা|thana)\\s*[:：-]?\\s*([^,;،]+)/i)?.[1]||'').trim(),text=raw+' '+providedDistrict+' '+providedUpazila+' '+explicitDistrict+' '+explicitUpazila;
+ const raw=String(address||''),explicitDistrict=String(raw.match(/(?:জেলা|district)\s*[:：-]?\s*([^,;،]+)/i)?.[1]||'').trim(),explicitUpazila=String(raw.match(/(?:উপজেলা|upazila|upzilla|থানা|thana)\s*[:：-]?\s*([^,;،]+)/i)?.[1]||'').trim(),text=raw+' '+providedDistrict+' '+providedUpazila+' '+explicitDistrict+' '+explicitUpazila;
  const thana=dhakaThanaAliases.find(x=>areaHas(text,x));if(thana)return {district:'ঢাকা (শহর)',upazila:explicitUpazila||thana};
  if(areaHas(text,'ঢাকা শহর')||areaHas(text,'dhaka city'))return {district:'ঢাকা (শহর)',upazila:explicitUpazila||'ঢাকা শহর'};
  if(areaHas(text,'মহেশপুর')||areaHas(text,'maheshpur'))return {district:'ঝিনাইদহ',upazila:explicitUpazila||'মহেশপুর'};
@@ -114,7 +114,7 @@ try{await sendOrderTelegram(env,telegramMessage);}catch(e){console.error('[METHO
  if(['rejected','cancelled','shipped','delivered'].includes(current.status)||current.courier_consignment_id||current.courier_tracking_code)return error('এই অর্ডারটি কুরিয়ারে পাঠানো বা চূড়ান্ত হয়েছে; সম্পাদনা করা যাবে না।',409);
  const name=String(d.customer_name||'').trim(),digits=x=>String(x||'').replace(/[০-৯]/g,x=>String('০১২৩৪৫৬৭৮৯'.indexOf(x)));
  const phone=digits(d.phone).replace(/[\s()+-]/g,'');
- const address=String(d.address||'').trim(),area=await resolveAddressArea(address,d.district,d.upazila),district=area.district,upazila=area.upazila;
+ const address=String(d.address||'').trim(),area=await resolveAddressArea(address,d.district,d.upazila),district=area.district,upazila=area.upazila;\n if(!district||district==='অনির্ধারিত')return error('ঠিকানা থেকে জেলা/এলাকা নিশ্চিত করা যায়নি। উপজেলা ও জেলার নামসহ ঠিকানা দিন।');
  if(name.length<2||name.length>80)return error('গ্রাহকের নাম ২–৮০ অক্ষরের মধ্যে দিন।');
  if(!/^01[3-9]\d{8}$/.test(phone))return error('সঠিক ১১ সংখ্যার বাংলাদেশি মোবাইল নম্বর দিন।');
  if(address.length<5||address.length>500)return error('সম্পূর্ণ ঠিকানা অন্তত ৫ অক্ষর এবং সর্বোচ্চ ৫০০ অক্ষরের মধ্যে দিন।');\n if(!district||district==='অনির্ধারিত')return error('ঠিকানা থেকে জেলা/এলাকা নিশ্চিত করা যায়নি। অনুগ্রহ করে উপজেলা ও জেলার নামসহ ঠিকানা দিন।');
