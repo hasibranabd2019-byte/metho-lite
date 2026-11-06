@@ -7,7 +7,7 @@ document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-invoice-order]');if(!b)return;
  const original=b.textContent;b.disabled=true;b.textContent='ইনভয়েস তৈরি হচ্ছে…';let sheet;
  try{
-  await Promise.all([window.html2pdf?Promise.resolve():loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js'),window.QRCode?Promise.resolve():loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js')]);if(typeof window.html2pdf!=='function')throw Error('PDF সুবিধাটি লোড হয়নি।');
+  const pdfLibrary=window.html2pdf?Promise.resolve():loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js');const qrLibrary=window.QRCode?Promise.resolve():loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js').catch(()=>null);await Promise.all([pdfLibrary,qrLibrary]);if(typeof window.html2pdf!=='function')throw Error('PDF সুবিধাটি লোড হয়নি।');
   const r=await fetch('/api/invoice',{method:'POST',headers:{'content-type':'application/json'},cache:'no-store',body:JSON.stringify({orderCode:b.dataset.invoiceOrder,phone:b.dataset.invoicePhone})});
   const d=await r.json();if(!r.ok)throw Error(d.error||'ইনভয়েস পাওয়া যায়নি।');
   const o=d.order||{},s=d.settings||{},items=o.items||[];if(!items.length)throw Error('পণ্যের তথ্য পাওয়া যায়নি।');
@@ -35,7 +35,7 @@ document.addEventListener('click',async e=>{
   if(visiblePixels<1)throw Error('ইনভয়েস ফাঁকা তৈরি হচ্ছে। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।');
   const pdf=await worker.toPdf().get('pdf');
   if(!pdf||typeof pdf.save!=='function')throw Error('PDF ফাইল প্রস্তুত হয়নি। আবার চেষ্টা করুন।');
-  pdf.save(pdfOptions.filename);
+  const blob=pdf.output('blob');if(!blob||blob.size<1000)throw Error('ইনভয়েস PDF ফাইল তৈরি হয়নি। আবার চেষ্টা করুন।');const downloadUrl=URL.createObjectURL(blob),downloadLink=document.createElement('a');downloadLink.href=downloadUrl;downloadLink.download=pdfOptions.filename;downloadLink.style.display='none';document.body.appendChild(downloadLink);downloadLink.click();downloadLink.remove();setTimeout(()=>URL.revokeObjectURL(downloadUrl),60000);
  }catch(x){alert(x.message||'ইনভয়েস ডাউনলোড করা যায়নি।');}finally{sheet?.remove();b.disabled=false;b.textContent=original;}
 });
 })();
