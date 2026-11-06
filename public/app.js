@@ -90,16 +90,39 @@ function renderAddressSuggestions(){
  const box=$('#address-suggestions'),raw=String($('#address')?.value||'').trim();
  if(!box)return;
  if(!raw){box.hidden=true;box.innerHTML='';checkoutSuggestionItems=[];return;}
- const parts=raw.split(/[,;،]/).map(x=>x.trim()).filter(Boolean),lastWords=(parts.at(-1)||'').split(/\s+/).filter(Boolean),queries=[...parts.slice(-2).reverse(),lastWords.slice(-3).join(' '),lastWords.slice(-2).join(' ')].filter(Boolean),districts=bdTree.flatMap(x=>x.districts||[]),items=[];
- const add=(district,upazila,name,englishNames=[])=>{const canonical=name||upazila||district;if(!queries.some(q=>checkoutSuggestionMatches(q,canonical,englishNames)))return;const key=district+'|'+upazila;if(items.some(x=>x.key===key))return;items.push({key,district,upazila,label:upazila?upazila+', '+district:district});};
- for(const d of districts){add(d.bn_name,'',d.bn_name,[d.name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);for(const u of d.upazilas||[])add(d.bn_name,u.bn_name,u.bn_name,[u.name]);}
+ // Search every word and adjacent word-group in the complete address, not only
+ // the final comma-separated part. This supports locality-first entries such as
+ // "wireless chandpur" and "wireless, chandpur sadar".
+ const words=raw.match(/[\\p{L}\\p{N}]+/gu)||[],queries=[];
+ for(let size=Math.min(4,words.length);size>=1;size--){
+  for(let i=0;i<=words.length-size;i++){
+   const query=words.slice(i,i+size).join(' ');
+   if(normalizeCheckoutArea(query).replace(/\\s/g,'').length>=2)queries.push(query);
+  }
+ }
+ const districts=bdTree.flatMap(x=>x.districts||[]),items=[];
+ const matchesAny=(names)=>queries.some(q=>checkoutSuggestionMatches(q,names[0],names.slice(1)));
+ const add=(district,upazila,name,englishNames=[])=>{
+  const districtNames=[district,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[district]||[])];
+  const locationNames=[name||upazila||district,...(CHECKOUT_SPELLING_ALIASES[name||upazila||district]||[]),...englishNames];
+  const districtMatched=matchesAny(districtNames),locationMatched=matchesAny(locationNames);
+  if(!districtMatched&&!locationMatched)return;
+  const key=district+'|'+upazila;
+  if(items.some(x=>x.key===key))return;
+  items.push({key,district,upazila,label:upazila?upazila+', '+district:district,matchScore:locationMatched?2:1});
+ };
+ for(const d of districts){
+  add(d.bn_name,'',d.bn_name,[d.name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);
+  for(const u of d.upazilas||[])add(d.bn_name,u.bn_name,u.bn_name,[u.en_name,u.name].filter(Boolean));
+ }
  // Keep suggestions useful even when the external geography file is unavailable.
  for(const district of CHECKOUT_DISTRICTS)add(district,'',district);
  for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (শহর)',thana,thana);
  add('চুয়াডাঙ্গা','জীবননগর','জীবননগর');
  add('ঝিনাইদহ','মহেশপুর','মহেশপুর');
- const explicitDistricts=[...new Set([...districts.map(d=>d.bn_name),...CHECKOUT_DISTRICTS].filter(name=>checkoutSuggestionMatches(raw,name)))];
+ const explicitDistricts=[...new Set([...districts.map(d=>d.bn_name),...CHECKOUT_DISTRICTS].filter(name=>matchesAny([name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[])])))];
  const relevantItems=explicitDistricts.length?items.filter(x=>explicitDistricts.includes(x.district)||(explicitDistricts.includes('ঢাকা')&&x.district==='ঢাকা (শহর)')):items;
+ relevantItems.sort((a,b)=>b.matchScore-a.matchScore);
  checkoutSuggestionItems=relevantItems.slice(0,7);
  box.innerHTML=checkoutSuggestionItems.map((x,i)=>'<button type="button" class="address-suggestion" role="option" aria-selected="false" data-address-suggestion="'+i+'"><span class="address-suggestion-name">'+esc(x.label)+'</span><small>'+(x.upazila?(x.district==='ঢাকা (শহর)'?'থানা':'উপজেলা'):'জেলা')+'</small></button>').join('');
  box.hidden=!checkoutSuggestionItems.length;
