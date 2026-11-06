@@ -459,6 +459,10 @@ async function resolveAddressArea(address,providedDistrict='',providedUpazila=''
   try{const tree=await getAddressGeoTree(),districts=tree.flatMap(x=>x.districts||[]),d=districts.find(x=>x.bn_name===pd||x.en_name===pd),u=d?.upazilas?.find(x=>x.bn_name===pu||x.en_name===pu);if(d&&u)return {district:d.bn_name,upazila:u.bn_name};}catch(e){console.error('[METHO_ADDRESS_GEO_LOOKUP_FAILED]',String(e));}
  }
  const text=raw+' '+pd+' '+pu+' '+explicitDistrict+' '+explicitUpazila;
+ // Respect a district explicitly written as the final address word, without replacing the locality text.
+ const trailingDistrictToken=raw.match(/(?:^|[\\s,;،])([\\p{L}\\p{N}]+)\\s*$/u)?.[1]||'';
+ const trailingDistrict=districtAliases.find(([bn,aliases])=>[bn,...aliases].some(x=>areaHas(trailingDistrictToken,x)));
+ if(trailingDistrict)return {district:trailingDistrict[0],upazila:explicitUpazila||''};
  if(areaHas(text,'নীলক্ষেত')&&areaHas(text,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (শহর)',upazila:'নিউ মার্কেট'};
  if(areaHasName(text,'ড্যাফোডিল ইন্টারন্যাশনাল ইউনিভার্সিটি')||areaHas(text,'daffodil international university')||areaHas(text,'diu'))return {district:'ঢাকা',upazila:'সাভার'};
  const cityLocality=dhakaCityLocalities.find(([thana,locality,aliases])=>areaHasName(text,locality)||(aliases||[]).some(alias=>areaHas(text,alias)));
