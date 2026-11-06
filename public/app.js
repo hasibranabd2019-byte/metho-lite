@@ -19,7 +19,7 @@ root.querySelectorAll('.add').forEach(b=>{const productId=Number(b.dataset.id);u
 let cartToastTimer=null;function showCartToast(){let toast=$('#cart-toast');if(!toast){toast=document.createElement('div');toast.id='cart-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.className='cart-toast';document.body.appendChild(toast);}toast.innerHTML='<img class="cart-toast-cat" src="https://ghhljiclxtgzxndalztj.supabase.co/storage/v1/object/public/metho-lite-assets/1000097387.gif" alt="" aria-hidden="true" onerror="this.hidden=true"><span class="cart-toast-text">কার্টে পণ্য যোগ হয়েছে।<br>অর্ডার সম্পন্ন করতে নিচে যান।</span>';toast.classList.remove('is-visible','is-hiding');document.body.classList.add('cart-toast-open');void toast.offsetWidth;toast.classList.add('is-visible');if(cartToastTimer)clearTimeout(cartToastTimer);cartToastTimer=setTimeout(()=>{toast.classList.remove('is-visible');toast.classList.add('is-hiding');document.body.classList.remove('cart-toast-open');},4000);}
 
 function normalizeCheckoutArea(value){return String(value||'').normalize('NFKC').toLocaleLowerCase().replace(/[০-৯]/g,x=>String('০১২৩৪৫৬৭৮৯'.indexOf(x))).replace(/(জেলা|উপজেলা|থানা|district|upazila|upzilla|thana|zila)/g,' ').replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();}
-function normalizeCheckoutRoman(value){return normalizeCheckoutArea(value).replace(/bh/g,'v').replace(/ph/g,'f').replace(/ae/g,'a').replace(/ee|ii/g,'i').replace(/sh/g,'s').replace(/e/g,'a').replace(/[ckq]/g,'k');}
+function normalizeCheckoutRoman(value){return normalizeCheckoutArea(value).replace(/ae|aa/g,'a').replace(/ee|ii/g,'i').replace(/oo|ou/g,'u').replace(/bh/g,'b').replace(/ph/g,'f').replace(/chh?/g,'c').replace(/sh/g,'s').replace(/zh|z/g,'j').replace(/kh/g,'k').replace(/gh/g,'g').replace(/th/g,'t').replace(/dh/g,'d').replace(/[ckq]/g,'k').replace(/[vw]/g,'b').replace(/e/g,'a');}
 function checkoutAreaDistance(a,b){const x=Array.from(a),y=Array.from(b);if(Math.abs(x.length-y.length)>2)return 99;let row=Array.from({length:y.length+1},(_,i)=>i);for(let i=1;i<=x.length;i++){const next=[i];for(let j=1;j<=y.length;j++)next[j]=Math.min(next[j-1]+1,row[j]+1,row[j-1]+(x[i-1]===y[j-1]?0:1));row=next;}return row[y.length];}
 function checkoutAreaHas(text,alias){const t=' '+normalizeCheckoutRoman(text)+' ',a=normalizeCheckoutRoman(alias);if(!a)return false;if(t.includes(' '+a+' '))return true;const words=t.trim().split(' '),parts=a.split(' ');for(let i=0;i<=words.length-parts.length;i++){if(parts.every((p,j)=>{const w=words[i+j],limit=p.length>=9?2:p.length>=5?1:0;return w===p||checkoutAreaDistance(w,p)<=limit;}))return true;}const key=value=>normalizeCheckoutRoman(value).replace(/\s+/g,'').replace(/[iy]/g,'i').replace(/[ou]/g,'a').replace(/[zgj]/g,'j').replace(/[wb]/g,'b'),target=key(alias);for(let start=0;start<words.length;start++)for(let count=1;count<=3&&start+count<=words.length;count++){const candidate=key(words.slice(start,start+count).join(' ')),limit=target.length>=10?2:target.length>=5?1:0;if(candidate===target||limit>0&&Math.abs(candidate.length-target.length)<=limit&&checkoutAreaDistance(candidate,target)<=limit)return true;}return false;}
 const CHECKOUT_SPELLING_ALIASES={
@@ -49,7 +49,7 @@ const CHECKOUT_ENGLISH_DISTRICT_ALIASES={
 function checkoutSuggestionMatchScore(query,name,extraNames=[]){
  const normalize=value=>normalizeCheckoutRoman(value).replace(/[iy]/g,'i').replace(/[ou]/g,'a').replace(/[zgj]/g,'j').replace(/[wb]/g,'b');
  const q=normalize(query),qWords=q.split(' ').filter(Boolean),names=[name,...(CHECKOUT_SPELLING_ALIASES[name]||[]),...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[]),...extraNames];
- if(q.replace(/\s/g,'').length<2)return 0;
+ if(normalizeCheckoutArea(query).replace(/\s/g,'').length<3)return 0;
  let best=0;
  for(const value of names.filter(Boolean)){
   const n=normalize(value),nWords=n.split(' ').filter(Boolean);
@@ -64,7 +64,7 @@ function checkoutSuggestionMatchScore(query,name,extraNames=[]){
   }
   for(const word of nWords){
    if(word===q){best=Math.max(best,100);continue;}
-   if(q.length>=2&&word.startsWith(q)){best=Math.max(best,78);continue;}
+   if(q.length>=1&&word.startsWith(q)){best=Math.max(best,78);continue;}
    if(q.length>=5){const limit=q.length>=8&&word.length>=8?2:1;if(Math.abs(q.length-word.length)<=limit&&checkoutAreaDistance(q,word)<=limit)best=Math.max(best,64);}
   }
  }
@@ -432,8 +432,8 @@ function renderAddressSuggestions(){
    // Keep the complete phrase (e.g. "boyra bazar") so a locality is
    // matched as a place, while also searching meaningful words separately.
    const fullQuery=group.join(' '),meaningfulQuery=meaningful.join(' ');
-   if(normalizeCheckoutArea(fullQuery).replace(/\s/g,'').length>=2)queries.push(fullQuery);
-   if(meaningfulQuery!==fullQuery&&normalizeCheckoutArea(meaningfulQuery).replace(/\s/g,'').length>=2)queries.push(meaningfulQuery);
+   if(normalizeCheckoutArea(fullQuery).replace(/\s/g,'').length>=3)queries.push(fullQuery);
+   if(meaningfulQuery!==fullQuery&&normalizeCheckoutArea(meaningfulQuery).replace(/\s/g,'').length>=3)queries.push(meaningfulQuery);
   }
  }
  const districts=bdTree.flatMap(x=>x.districts||[]),items=[];
