@@ -483,12 +483,13 @@ async function resolveAddressArea(address,providedDistrict='',providedUpazila=''
 function formatStoredAddress(address,upazila,district){
  const raw=String(address||'').trim(),u=String(upazila||'').trim(),d=String(district||'').trim();
  const clean=raw.replace(/^(?:গ্রাম\/এরিয়া|এরিয়া|এলাকা|গ্রাম)\s*[:：]?\s*/,'').replace(/[,;،]+\s*(?:উপজেলা\/থানা|উপজেলা|থানা|জেলা|সিটি করপোরেশন)\s*[:：][^,;،]*/g,'').trim();
- if(d==='ঢাকা শহরের বাইরে'||!u)return 'এরিয়া: '+clean+', জেলা: '+d;
  if(d==='ঢাকা (শহর)'){
+  if(!u)return 'এরিয়া: '+clean+', সিটি করপোরেশন: ঢাকা';
   const north=['উত্তরা','উত্তরা পশ্চিম','তুরাগ','দক্ষিণখান','উত্তরখান','খিলক্ষেত','এয়ারপোর্ট','বিমানবন্দর','গুলশান','বনানী','বাড্ডা','ভাটারা','তেজগাঁও','তেজগাঁও শিল্পাঞ্চল','মিরপুর','পল্লবী','রূপনগর','শাহ আলী','কাফরুল','ক্যান্টনমেন্ট','ভাষানটেক','আদাবর','মোহাম্মদপুর','শেরে বাংলা নগর','দারুস সালাম'];
   const corporation=north.some(x=>u.includes(x))?'ঢাকা উত্তর':'ঢাকা দক্ষিণ';
   return 'এরিয়া: '+clean+', থানা: '+u+', সিটি করপোরেশন: '+corporation;
  }
+ if(!u)return 'এরিয়া: '+clean+', জেলা: '+d;
  return 'গ্রাম/এরিয়া: '+clean+', উপজেলা/থানা: '+u+', জেলা: '+d;
 }
 
