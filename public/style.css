@@ -263,3 +263,7 @@ body:not(.cart-toast-open)> :not(#cart-toast){transition:filter .22s ease;}
 .delivery-zone-radio{width:16px;height:16px;flex-basis:16px;border-width:1.5px}
 .delivery-zone-option input:checked+.delivery-zone-radio{border-width:4px}
 @media(max-width:360px){.delivery-zone-options{gap:5px}.delivery-zone-option{min-height:60px;padding:6px 2px;font-size:10px}}
+
+/* Highlight unresolved delivery region choices after submit */
+.delivery-zone-choice.field-invalid{border:1.5px solid #d93025!important;background:#fff8f7!important;box-shadow:0 0 0 2px rgba(217,48,37,.10)!important;border-radius:10px;padding:10px}
+.delivery-zone-choice.field-invalid>p{color:#b3261e;font-weight:700}
