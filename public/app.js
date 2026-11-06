@@ -25,8 +25,8 @@ const CHECKOUT_DHAKA_THANAS=['মিরপুর','পল্লবী','রূ�
 const CHECKOUT_DISTRICTS=['ঝিনাইদহ','ঢাকা','চট্টগ্রাম','কুমিল্লা','বগুড়া','যশোর','বরিশাল','কক্সবাজার','ময়মনসিংহ','নোয়াখালী','ফরিদপুর','গাজীপুর','নারায়ণগঞ্জ','নরসিংদী','মুন্সীগঞ্জ','মানিকগঞ্জ','টাঙ্গাইল','কিশোরগঞ্জ','গোপালগঞ্জ','মাদারীপুর','রাজবাড়ী','শরীয়তপুর','চাঁদপুর','লক্ষ্মীপুর','ফেনী','ব্রাহ্মণবাড়িয়া','খুলনা','সাতক্ষীরা','বাগেরহাট','নড়াইল','মাগুরা','কুষ্টিয়া','চুয়াডাঙ্গা','মেহেরপুর','রাজশাহী','নাটোর','নওগাঁ','পাবনা','সিরাজগঞ্জ','জয়পুরহাট','চাঁপাইনবাবগঞ্জ','রংপুর','দিনাজপুর','গাইবান্ধা','কুড়িগ্রাম','লালমনিরহাট','নীলফামারী','পঞ্চগড়','ঠাকুরগাঁও','সিলেট','সুনামগঞ্জ','মৌলভীবাজার','হবিগঞ্জ','জামালপুর','শেরপুর','নেত্রকোণা','বরগুনা','পটুয়াখালী','ভোলা','পিরোজপুর','ঝালকাঠি','রাঙ্গামাটি','খাগড়াছড়ি','বান্দরবান'];
 function resolveCheckoutArea(address){
  const full=String(address||''),normalized=full.toLocaleLowerCase('bn-BD');
- const explicitDistrict=full.match(/(?:জেলা|district)\\s*[:：-]?\\s*([^,;،]+)/i)?.[1]?.trim()||'';
- const explicitUpazila=full.match(/(?:উপজেলা|upazila|upzilla|থানা|thana)\\s*[:：-]?\\s*([^,;،]+)/i)?.[1]?.trim()||'';
+ const explicitDistrict=full.match(/(?:জেলা|district)\s*[:：-]?\s*([^,;،]+)/i)?.[1]?.trim()||'';
+ const explicitUpazila=full.match(/(?:উপজেলা|upazila|upzilla|থানা|thana)\s*[:：-]?\s*([^,;،]+)/i)?.[1]?.trim()||'';
  if(bdTree.length){
   const districts=bdTree.flatMap(x=>x.districts||[]);
   const namedDistricts=districts.filter(d=>checkoutAreaHas(full,d.bn_name)||checkoutAreaHas(full,d.en_name));
