@@ -460,7 +460,7 @@ async function resolveAddressArea(address,providedDistrict='',providedUpazila=''
  }
  const text=raw+' '+pd+' '+pu+' '+explicitDistrict+' '+explicitUpazila;
  // Respect a district explicitly written as the final address word, without replacing the locality text.
- const trailingDistrictToken=raw.match(/(?:^|[\\s,;،])([\\p{L}\\p{N}]+)\\s*$/u)?.[1]||'';
+ const trailingDistrictToken=raw.match(/(?:^|[\s,;،])([\p{L}\p{N}]+)\s*$/u)?.[1]||'';
  const trailingDistrict=districtAliases.find(([bn,aliases])=>[bn,...aliases].some(x=>areaHas(trailingDistrictToken,x)));
  if(trailingDistrict)return {district:trailingDistrict[0],upazila:explicitUpazila||''};
  if(areaHas(text,'নীলক্ষেত')&&areaHas(text,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (শহর)',upazila:'নিউ মার্কেট'};
