@@ -19,7 +19,7 @@ root.querySelectorAll('.add').forEach(b=>{const productId=Number(b.dataset.id);u
 let cartToastTimer=null;function showCartToast(){let toast=$('#cart-toast');if(!toast){toast=document.createElement('div');toast.id='cart-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.className='cart-toast';document.body.appendChild(toast);}toast.innerHTML='<img class="cart-toast-cat" src="https://ghhljiclxtgzxndalztj.supabase.co/storage/v1/object/public/metho-lite-assets/1000097387.gif" alt="" aria-hidden="true" onerror="this.hidden=true"><span class="cart-toast-text">কার্টে পণ্য যোগ হয়েছে।<br>অর্ডার সম্পন্ন করতে নিচে যান।</span>';toast.classList.remove('is-visible','is-hiding');document.body.classList.add('cart-toast-open');void toast.offsetWidth;toast.classList.add('is-visible');if(cartToastTimer)clearTimeout(cartToastTimer);cartToastTimer=setTimeout(()=>{toast.classList.remove('is-visible');toast.classList.add('is-hiding');document.body.classList.remove('cart-toast-open');},4000);}
 
 function normalizeCheckoutArea(value){return String(value||'').normalize('NFKC').toLocaleLowerCase().replace(/[০-৯]/g,x=>String('০১২৩৪৫৬৭৮৯'.indexOf(x))).replace(/(জেলা|উপজেলা|থানা|district|upazila|upzilla|thana|zila)/g,' ').replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();}
-function normalizeCheckoutRoman(value){return normalizeCheckoutArea(value).replace(/bh/g,'v').replace(/ph/g,'f').replace(/ae/g,'a').replace(/e/g,'a').replace(/[ckq]/g,'k');}
+function normalizeCheckoutRoman(value){return normalizeCheckoutArea(value).replace(/bh/g,'v').replace(/ph/g,'f').replace(/ae/g,'a').replace(/ee|ii/g,'i').replace(/sh/g,'s').replace(/e/g,'a').replace(/[ckq]/g,'k');}
 function checkoutAreaDistance(a,b){const x=Array.from(a),y=Array.from(b);if(Math.abs(x.length-y.length)>2)return 99;let row=Array.from({length:y.length+1},(_,i)=>i);for(let i=1;i<=x.length;i++){const next=[i];for(let j=1;j<=y.length;j++)next[j]=Math.min(next[j-1]+1,row[j]+1,row[j-1]+(x[i-1]===y[j-1]?0:1));row=next;}return row[y.length];}
 function checkoutAreaHas(text,alias){const t=' '+normalizeCheckoutRoman(text)+' ',a=normalizeCheckoutRoman(alias);if(!a)return false;if(t.includes(' '+a+' '))return true;const words=t.trim().split(' '),parts=a.split(' ');for(let i=0;i<=words.length-parts.length;i++){if(parts.every((p,j)=>{const w=words[i+j],limit=p.length>=9?2:p.length>=5?1:0;return w===p||checkoutAreaDistance(w,p)<=limit;}))return true;}const key=value=>normalizeCheckoutRoman(value).replace(/\s+/g,'').replace(/[iy]/g,'i').replace(/[ou]/g,'a').replace(/[zgj]/g,'j').replace(/[wb]/g,'b'),target=key(alias);for(let start=0;start<words.length;start++)for(let count=1;count<=3&&start+count<=words.length;count++){const candidate=key(words.slice(start,start+count).join(' ')),limit=target.length>=10?2:target.length>=5?1:0;if(candidate===target||limit>0&&Math.abs(candidate.length-target.length)<=limit&&checkoutAreaDistance(candidate,target)<=limit)return true;}return false;}
 const CHECKOUT_SPELLING_ALIASES={
@@ -39,7 +39,8 @@ const CHECKOUT_SPELLING_ALIASES={
  'মহেশপুর':['maheshpur','moheshpur','mohesphur','mohespoor','mohespor','mohespur','mahespur','mahespoor'],
  'ঝিনাইদহ':['jhenaidah','jhenidah'],
  'চুয়াডাঙ্গা':['chuadanga','chuadanga'],
- 'ঢাকা':['dhaka']
+ 'ঢাকা':['dhaka'],
+ 'শ্রীমঙ্গল':['sreemangal','shreemangal','srimangal','shrimangal','shrimongol','srimongol','shri mongol','sree mongol','shree mongol']
 };
 function checkoutAreaHasName(text,name){return checkoutAreaHas(text,name)||(CHECKOUT_SPELLING_ALIASES[name]||[]).some(alias=>checkoutAreaHas(text,alias));}
 const CHECKOUT_ENGLISH_DISTRICT_ALIASES={
@@ -58,13 +59,13 @@ function checkoutSuggestionMatchScore(query,name,extraNames=[]){
    if((' '+n+' ').includes(' '+q+' ')){best=Math.max(best,95);continue;}
    if(n.startsWith(q+' ')){best=Math.max(best,88);continue;}
    if(qWords.length===nWords.length&&qWords.every((word,i)=>word===nWords[i])){best=Math.max(best,95);continue;}
-   if(qWords.length===nWords.length&&qWords.every((word,i)=>word.length>=4&&Math.abs(word.length-nWords[i].length)<=1&&checkoutAreaDistance(word,nWords[i])<=1)){best=Math.max(best,62);}
+   if(qWords.length===nWords.length&&qWords.every((word,i)=>{const limit=word.length>=8&&nWords[i].length>=8?2:1;return word.length>=4&&Math.abs(word.length-nWords[i].length)<=limit&&checkoutAreaDistance(word,nWords[i])<=limit;})){best=Math.max(best,66);}
    continue;
   }
   for(const word of nWords){
    if(word===q){best=Math.max(best,100);continue;}
    if(q.length>=3&&word.startsWith(q)){best=Math.max(best,78);continue;}
-   if(q.length>=5&&Math.abs(q.length-word.length)<=1&&checkoutAreaDistance(q,word)<=1)best=Math.max(best,58);
+   if(q.length>=5){const limit=q.length>=8&&word.length>=8?2:1;if(Math.abs(q.length-word.length)<=limit&&checkoutAreaDistance(q,word)<=limit)best=Math.max(best,64);}
   }
  }
  return best;
