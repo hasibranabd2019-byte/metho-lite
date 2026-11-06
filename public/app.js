@@ -64,7 +64,7 @@ function renderAddressSuggestions(){
  const box=$('#address-suggestions'),raw=String($('#address')?.value||'').trim();
  if(!box)return;
  if(!raw||!bdTree.length){box.hidden=true;box.innerHTML='';checkoutSuggestionItems=[];return;}
- const parts=raw.split(/[,;،]/).map(x=>x.trim()).filter(Boolean),queries=parts.slice(-2).reverse(),districts=bdTree.flatMap(x=>x.districts||[]),items=[];
+ const parts=raw.split(/[,;،]/).map(x=>x.trim()).filter(Boolean),lastWords=(parts.at(-1)||'').split(/\s+/).filter(Boolean),queries=[...parts.slice(-2).reverse(),lastWords.slice(-3).join(' '),lastWords.slice(-2).join(' ')].filter(Boolean),districts=bdTree.flatMap(x=>x.districts||[]),items=[];
  const add=(district,upazila,name)=>{const canonical=name||upazila||district;if(!queries.some(q=>checkoutSuggestionMatches(q,canonical)))return;const key=district+'|'+upazila;if(items.some(x=>x.key===key))return;items.push({key,district,upazila,label:upazila?upazila+', '+district:district});};
  for(const d of districts){add(d.bn_name,'',d.bn_name);for(const u of d.upazilas||[])add(d.bn_name,u.bn_name,u.bn_name);}
  for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (শহর)',thana,thana);
