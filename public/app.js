@@ -169,7 +169,9 @@ function resolveCheckoutArea(address){
  const upazilaLabel=full.match(/(?:উপজেলা|upazila|upzilla|থানা|thana)\s*[:：-]?\s*([^,;،]+)/i)?.[1]?.trim()||full.match(/([^,;،]+?)\s*(?:উপজেলা|upazila|upzilla|থানা|thana)\s*$/i)?.[1]?.trim()||'';
  const matchDistrict=value=>districts.filter(d=>checkoutAreaHasName(value,d.bn_name)||checkoutAreaHas(value,d.en_name));
  const matchUpazilas=(value,scope=districts)=>scope.flatMap(d=>(d.upazilas||[]).filter(u=>checkoutAreaHasName(value,u.bn_name)||checkoutAreaHas(value,u.en_name)).map(u=>({district:d.bn_name,upazila:u.bn_name})));
- if(checkoutAreaHas(full,'নীলক্ষেত')&&checkoutAreaHas(full,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (সিটি)',upazila:'নিউ মার্কেট'};\n const cityLocality=CHECKOUT_DHAKA_LOCALITIES.find(([thana,locality,aliases])=>checkoutAreaHasName(full,locality)||(aliases||[]).some(alias=>checkoutAreaHas(full,alias)));\n if(cityLocality)return {district:'ঢাকা (সিটি)',upazila:cityLocality[0]};
+ if(checkoutAreaHas(full,'নীলক্ষেত')&&checkoutAreaHas(full,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (সিটি)',upazila:'নিউ মার্কেট'};
+ const cityLocality=CHECKOUT_DHAKA_LOCALITIES.find(([thana,locality,aliases])=>checkoutAreaHasName(full,locality)||(aliases||[]).some(alias=>checkoutAreaHas(full,alias)));
+ if(cityLocality)return {district:'ঢাকা (সিটি)',upazila:cityLocality[0]};
  const explicitDistricts=districtLabel?matchDistrict(districtLabel):[];
  if(explicitDistricts.length===1){
   const d=explicitDistricts[0],explicitUps=upazilaLabel?matchUpazilas(upazilaLabel,[d]):matchUpazilas(full,[d]);
@@ -268,7 +270,8 @@ function renderAddressSuggestions(){
  }
  // Keep suggestions useful even when the external geography file is unavailable.
  for(const district of CHECKOUT_DISTRICTS)add(district,'',district);
- for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (সিটি)',thana,thana);\n for(const [thana,locality,aliases] of CHECKOUT_DHAKA_LOCALITIES)add('ঢাকা (সিটি)',thana,locality,aliases,locality);
+ for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (সিটি)',thana,thana);
+ for(const [thana,locality,aliases] of CHECKOUT_DHAKA_LOCALITIES)add('ঢাকা (সিটি)',thana,locality,aliases,locality);
  add('চুয়াডাঙ্গা','জীবননগর','জীবননগর');
  add('ঝিনাইদহ','মহেশপুর','মহেশপুর');
  const explicitDistricts=[...new Set([...districts.map(d=>d.bn_name),...CHECKOUT_DISTRICTS].filter(name=>matchesAny([name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[])])))];
