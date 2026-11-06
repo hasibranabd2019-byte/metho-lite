@@ -10,11 +10,12 @@ function getCookie(req){const c=(req.headers.get('Cookie')||'').split(';').map(x
 async function readBody(req){try{return await req.json();}catch{return null;}}
 
 function normalizeAreaText(value){return String(value||'').normalize('NFKC').toLocaleLowerCase().replace(/[০-৯]/g,x=>String('০১২৩৪৫৬৭৮৯'.indexOf(x))).replace(/(জেলা|উপজেলা|থানা|district|upazila|upzilla|thana|zila)/g,' ').replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();}
+function normalizeAreaRoman(value){return normalizeAreaText(value).replace(/bh/g,'v').replace(/ph/g,'f').replace(/ae/g,'a').replace(/e/g,'a').replace(/[ckq]/g,'k');}
 function deliveryZoneForDistrict(district){const key=normalizeAreaText(district).replace(/\s+/g,'');if(key==='ঝিনাইদহ'||key==='jhenaidah')return 'jhenaidah';if(key==='ঢাকাশহর'||key==='ঢাকাসিটি')return 'dhaka_city';return 'outside_dhaka';}
 function calculateBaseDeliveryFee(district,grams){if(!district||!grams)return 0;const zone=deliveryZoneForDistrict(district),kg=Math.ceil(Number(grams)/1000);if(zone==='jhenaidah')return 6000+Math.max(0,kg-1)*2000;if(zone==='dhaka_city')return 11500+Math.max(0,kg-1)*2000;if(grams<=500)return 11500;if(grams<=1000)return 13500;return 13500+Math.max(0,kg-1)*2000;}
 function areaDistance(a,b){const x=Array.from(a),y=Array.from(b);if(Math.abs(x.length-y.length)>2)return 99;let row=Array.from({length:y.length+1},(_,i)=>i);for(let i=1;i<=x.length;i++){const next=[i];for(let j=1;j<=y.length;j++)next[j]=Math.min(next[j-1]+1,row[j]+1,row[j-1]+(x[i-1]===y[j-1]?0:1));row=next;}return row[y.length];}
 function areaHas(text,alias){
- const t=' '+normalizeAreaText(text)+' ',a=normalizeAreaText(alias);
+ const t=' '+normalizeAreaRoman(text)+' ',a=normalizeAreaRoman(alias);
  if(!a)return false;
  if(t.includes(' '+a+' '))return true;
  const words=t.trim().split(' '),parts=a.split(' ');
@@ -22,7 +23,7 @@ function areaHas(text,alias){
   if(parts.every((p,j)=>{const w=words[i+j],limit=p.length>=9?2:p.length>=5?1:0;return w===p||areaDistance(w,p)<=limit;}))return true;
  }
  // Also compare adjacent words as one place name (e.g. "zamal pur" / "jamalpur").
- const key=value=>normalizeAreaText(value).replace(/\s+/g,'').replace(/[qkc]/g,'k').replace(/[iy]/g,'i').replace(/[ou]/g,'a').replace(/[zgj]/g,'j').replace(/[wb]/g,'b'),target=key(alias);
+ const key=value=>normalizeAreaRoman(value).replace(/\s+/g,'').replace(/[iy]/g,'i').replace(/[ou]/g,'a').replace(/[zgj]/g,'j').replace(/[wb]/g,'b'),target=key(alias);
  for(let start=0;start<words.length;start++)for(let count=1;count<=3&&start+count<=words.length;count++){
   const candidate=key(words.slice(start,start+count).join(' ')),limit=target.length>=10?2:target.length>=5?1:0;
   if(candidate===target||limit>0&&Math.abs(candidate.length-target.length)<=limit&&areaDistance(candidate,target)<=limit)return true;
