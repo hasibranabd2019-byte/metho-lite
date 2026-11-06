@@ -92,7 +92,9 @@ function renderAddressSuggestions(){
  for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (শহর)',thana,thana);
  add('চুয়াডাঙ্গা','জীবননগর','জীবননগর');
  add('ঝিনাইদহ','মহেশপুর','মহেশপুর');
- checkoutSuggestionItems=items.slice(0,7);
+ const explicitDistricts=[...new Set([...districts.map(d=>d.bn_name),...CHECKOUT_DISTRICTS].filter(name=>checkoutSuggestionMatches(raw,name)))];
+ const relevantItems=explicitDistricts.length?items.filter(x=>explicitDistricts.includes(x.district)||(explicitDistricts.includes('ঢাকা')&&x.district==='ঢাকা (শহর)')):items;
+ checkoutSuggestionItems=relevantItems.slice(0,7);
  box.innerHTML=checkoutSuggestionItems.map((x,i)=>'<button type="button" class="address-suggestion" role="option" aria-selected="false" data-address-suggestion="'+i+'"><span class="address-suggestion-name">'+esc(x.label)+'</span><small>'+(x.upazila?(x.district==='ঢাকা (শহর)'?'থানা':'উপজেলা'):'জেলা')+'</small></button>').join('');
  box.hidden=!checkoutSuggestionItems.length;
  box.querySelectorAll('[data-address-suggestion]').forEach(button=>button.onclick=()=>{
