@@ -114,10 +114,11 @@ try{await sendOrderTelegram(env,telegramMessage);}catch(e){console.error('[METHO
  if(['rejected','cancelled','shipped','delivered'].includes(current.status)||current.courier_consignment_id||current.courier_tracking_code)return error('এই অর্ডারটি কুরিয়ারে পাঠানো বা চূড়ান্ত হয়েছে; সম্পাদনা করা যাবে না।',409);
  const name=String(d.customer_name||'').trim(),digits=x=>String(x||'').replace(/[০-৯]/g,x=>String('০১২৩৪৫৬৭৮৯'.indexOf(x)));
  const phone=digits(d.phone).replace(/[\s()+-]/g,'');
- const address=String(d.address||'').trim(),area=await resolveAddressArea(address,d.district,d.upazila),district=area.district,upazila=area.upazila;\n if(!district||district==='অনির্ধারিত')return error('ঠিকানা থেকে জেলা/এলাকা নিশ্চিত করা যায়নি। উপজেলা ও জেলার নামসহ ঠিকানা দিন।');
+ const address=String(d.address||'').trim(),area=await resolveAddressArea(address,d.district,d.upazila),district=area.district,upazila=area.upazila;
+ if(!district||district==='অনির্ধারিত')return error('ঠিকানা থেকে জেলা/এলাকা নিশ্চিত করা যায়নি। উপজেলা ও জেলার নামসহ ঠিকানা দিন।');
  if(name.length<2||name.length>80)return error('গ্রাহকের নাম ২–৮০ অক্ষরের মধ্যে দিন।');
  if(!/^01[3-9]\d{8}$/.test(phone))return error('সঠিক ১১ সংখ্যার বাংলাদেশি মোবাইল নম্বর দিন।');
- if(address.length<5||address.length>500)return error('সম্পূর্ণ ঠিকানা অন্তত ৫ অক্ষর এবং সর্বোচ্চ ৫০০ অক্ষরের মধ্যে দিন।');\n if(!district||district==='অনির্ধারিত')return error('ঠিকানা থেকে জেলা/এলাকা নিশ্চিত করা যায়নি। অনুগ্রহ করে উপজেলা ও জেলার নামসহ ঠিকানা দিন।');
+ if(address.length<5||address.length>500)return error('সম্পূর্ণ ঠিকানা অন্তত ৫ অক্ষর এবং সর্বোচ্চ ৫০০ অক্ষরের মধ্যে দিন।');
  const requested=Array.isArray(d.items)?d.items:[];if(!requested.length||requested.length>12)return error('কমপক্ষে একটি এবং সর্বোচ্চ ১২টি পণ্য লাইন দিন।');
  const quantities=new Map();for(const x of requested){const vid=Number(x.variant_id),q=Number(x.quantity);if(!Number.isInteger(vid)||vid<1||!Number.isInteger(q)||q<1||q>10)return error('পণ্যের ভ্যারিয়েন্ট বা পরিমাণ সঠিক নয়।');quantities.set(vid,(quantities.get(vid)||0)+q);}
  if([...quantities.values()].some(q=>q>10))return error('একই পণ্যের সর্বোচ্চ পরিমাণ ১০টি হতে পারবে।');
