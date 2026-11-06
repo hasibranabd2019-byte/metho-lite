@@ -77,27 +77,54 @@ function resolveCheckoutArea(address){
 function selectedCheckoutArea(){const district=$('#district')?.value||'',upazila=$('#upazila')?.value||'';return district&&upazila?{district,upazila,manual:true}:null;}
 function updateAddressResolution(){const box=$('#address-resolution');if(!box)return;const raw=String($('#address')?.value||'').trim(),manual=selectedCheckoutArea(),area=manual||resolveCheckoutArea(raw);if(!raw&&!manual){box.textContent='';return;}if(area.district&&area.upazila){const city=area.district==='ঢাকা (শহর)';box.textContent=(city?'থানা: ':'উপজেলা: ')+area.upazila+' · জেলা: '+area.district;}else if(area.district){box.textContent='জেলা: '+area.district+' · উপজেলা/থানা নিশ্চিত নয়';}else{box.textContent='এলাকা শনাক্ত করা যাচ্ছে না — ঠিকানা আরও স্পষ্ট করে লিখুন।';}}
 let checkoutSuggestionItems=[];
+let checkoutLocalities=null,checkoutLocalitiesPromise=null;
+function ensureCheckoutLocalities(){
+ if(checkoutLocalities)return Promise.resolve(checkoutLocalities);
+ if(!checkoutLocalitiesPromise)checkoutLocalitiesPromise=fetch('/bd-localities.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('locality data unavailable');return r.json();}).then(d=>{checkoutLocalities=Array.isArray(d.records)?d.records:[];return checkoutLocalities;}).catch(()=>{checkoutLocalities=[];return checkoutLocalities;});
+ return checkoutLocalitiesPromise;
+}
 function renderAddressSuggestions(){
  const box=$('#address-suggestions'),raw=String($('#address')?.value||'').trim();
  if(!box)return;
  if(!raw){box.hidden=true;box.innerHTML='';checkoutSuggestionItems=[];return;}
- const parts=raw.split(/[,;،]/).map(x=>x.trim()).filter(Boolean),lastWords=(parts.at(-1)||'').split(/\s+/).filter(Boolean),queries=[...parts.slice(-2).reverse(),lastWords.slice(-3).join(' '),lastWords.slice(-2).join(' ')].filter(Boolean),districts=bdTree.flatMap(x=>x.districts||[]),items=[];
- const add=(district,upazila,name)=>{const canonical=name||upazila||district;if(!queries.some(q=>checkoutSuggestionMatches(q,canonical)))return;const key=district+'|'+upazila;if(items.some(x=>x.key===key))return;items.push({key,district,upazila,label:upazila?upazila+', '+district:district});};
- for(const d of districts){add(d.bn_name,'',d.bn_name);for(const u of d.upazilas||[])add(d.bn_name,u.bn_name,u.bn_name);}
- // Keep suggestions useful even when the external geography file is unavailable.
- for(const district of CHECKOUT_DISTRICTS)add(district,'',district);
- for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (শহর)',thana,thana);
- add('চুয়াডাঙ্গা','জীবননগর','জীবননগর');
- add('ঝিনাইদহ','মহেশপুর','মহেশপুর');
- checkoutSuggestionItems=items.slice(0,7);
- box.innerHTML=checkoutSuggestionItems.map((x,i)=>'<button type="button" class="address-suggestion" role="option" aria-selected="false" data-address-suggestion="'+i+'"><span class="address-suggestion-name">'+esc(x.label)+'</span><small>'+(x.upazila?(x.district==='ঢাকা (শহর)'?'থানা':'উপজেলা'):'জেলা')+'</small></button>').join('');
+ if(raw.length>=2&&!checkoutLocalities)ensureCheckoutLocalities().then(()=>{if(String($('#address')?.value||'').trim()===raw)renderAddressSuggestions();});
+ const parts=raw.split(/[,;،]/).map(x=>x.trim()).filter(Boolean),lastWords=(parts.at(-1)||'').split(/\s+/).filter(Boolean),queries=[...parts.slice(-4).reverse(),lastWords.slice(-4).join(' '),lastWords.slice(-3).join(' '),lastWords.slice(-2).join(' ')].filter(Boolean),districts=bdTree.flatMap(x=>x.districts||[]),adminItems=[],localItems=[];
+ const addAdmin=(district,upazila,name)=>{const canonical=name||upazila||district;if(!queries.some(q=>checkoutSuggestionMatches(q,canonical)))return;const key='admin|'+district+'|'+upazila;if(adminItems.some(x=>x.key===key))return;adminItems.push({key,district,upazila,label:upazila?upazila+', '+district:district,kind:upazila?(district==='ঢাকা (শহর)'?'থানা':'উপজেলা'):'জেলা'});};
+ for(const d of districts){addAdmin(d.bn_name,'',d.bn_name);for(const u of d.upazilas||[])addAdmin(d.bn_name,u.bn_name,u.bn_name);}
+ for(const district of CHECKOUT_DISTRICTS)addAdmin(district,'',district);
+ for(const thana of CHECKOUT_DHAKA_THANAS)addAdmin('ঢাকা (শহর)',thana,thana);
+ addAdmin('চুয়াডাঙ্গা','জীবননগর','জীবননগর');
+ addAdmin('ঝিনাইদহ','মহেশপুর','মহেশপুর');
+ const localNameMatches=(q,name)=>name&&checkoutSuggestionMatches(q,name);
+ if(checkoutLocalities)for(const loc of checkoutLocalities){
+  if(!loc.bn&&!loc.en)continue;
+  if(!queries.some(q=>localNameMatches(q,loc.bn)||localNameMatches(q,loc.en)))continue;
+  const city=loc.district==='ঢাকা'&&loc.unitType==='thana',district=city?'ঢাকা (শহর)':loc.district;
+  const name=loc.bn||loc.en,parent=loc.parent||'',label=[name,parent,loc.unit,district].filter(Boolean).join(' · ');
+  const key='local|'+name+'|'+loc.unit+'|'+district;
+  if(!localItems.some(x=>x.key===key))localItems.push({key,kind:'locality',name,parent,upazila:loc.unit,district,unitType:loc.unitType,label,kindLabel:loc.kind||'লোকাল এরিয়া'});
+ }
+ localItems.sort((a,b)=>a.name.localeCompare(b.name,'bn'));
+ checkoutSuggestionItems=[...localItems,...adminItems].slice(0,7);
+ box.innerHTML=checkoutSuggestionItems.map((x,i)=>'<button type="button" class="address-suggestion" role="option" aria-selected="false" data-address-suggestion="'+i+'"><span class="address-suggestion-name">'+esc(x.label)+'</span><small>'+esc(x.kindLabel||x.kind)+'</small></button>').join('');
  box.hidden=!checkoutSuggestionItems.length;
  box.querySelectorAll('[data-address-suggestion]').forEach(button=>button.onclick=()=>{
   const selected=checkoutSuggestionItems[Number(button.dataset.addressSuggestion)];if(!selected)return;
-  const address=$('#address'),parts=String(address.value||'').trim().replace(/[,;،]+$/,'');
-  const suffix=selected.upazila?(selected.district==='ঢাকা (শহর)'?'থানা: '+selected.upazila+', জেলা: ঢাকা (শহর)':'উপজেলা: '+selected.upazila+', জেলা: '+selected.district):'জেলা: '+selected.district;
-  if(!parts.includes(selected.upazila||selected.district))address.value=parts+(parts?', ':'')+suffix;
-  else if(selected.upazila&&!parts.includes(selected.district))address.value=parts+', জেলা: '+selected.district;
+  const address=$('#address'),current=String(address.value||'').trim().replace(/[,;،]+$/,'');
+  if(selected.kind==='locality'){
+   const additions=[];
+   const normalizedCurrent=normalizeCheckoutArea(current);
+   if(!normalizedCurrent.includes(normalizeCheckoutArea(selected.name)))additions.push('এলাকা: '+selected.name);
+   if(selected.parent&&!normalizedCurrent.includes(normalizeCheckoutArea(selected.parent)))additions.push('ইউনিয়ন/পৌরসভা: '+selected.parent);
+   const unitLabel=selected.unitType==='thana'?'থানা: ':'উপজেলা: ';
+   if(selected.upazila&&!normalizedCurrent.includes(normalizeCheckoutArea(selected.upazila)))additions.push(unitLabel+selected.upazila);
+   if(selected.district&&!normalizedCurrent.includes(normalizeCheckoutArea(selected.district)))additions.push('জেলা: '+selected.district);
+   if(additions.length)address.value=current+(current?', ':'')+additions.join(', ');
+  }else{
+   const suffix=selected.upazila?(selected.district==='ঢাকা (শহর)'?'থানা: '+selected.upazila+', জেলা: ঢাকা (শহর)':'উপজেলা: '+selected.upazila+', জেলা: '+selected.district):'জেলা: '+selected.district;
+   if(!current.includes(selected.upazila||selected.district))address.value=current+(current?', ':'')+suffix;
+   else if(selected.upazila&&!current.includes(selected.district))address.value=current+', জেলা: '+selected.district;
+  }
   box.hidden=true;updateAddressResolution();renderCheckoutTotals();address.focus();
  });
 }
