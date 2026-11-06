@@ -86,6 +86,22 @@ function resolveCheckoutArea(address){
 function selectedCheckoutArea(){const district=$('#district')?.value||'',upazila=$('#upazila')?.value||'';return district&&upazila?{district,upazila,manual:true}:null;}
 function updateAddressResolution(){const box=$('#address-resolution');if(!box)return;const raw=String($('#address')?.value||'').trim(),manual=selectedCheckoutArea(),area=manual||resolveCheckoutArea(raw);if(!raw&&!manual){box.textContent='';return;}if(area.district&&area.upazila){const city=area.district==='ঢাকা (শহর)';box.textContent=(city?'থানা: ':'উপজেলা: ')+area.upazila+' · জেলা: '+area.district;}else if(area.district){box.textContent='জেলা: '+area.district+' · উপজেলা/থানা নিশ্চিত নয়';}else{box.textContent='এলাকা শনাক্ত করা যাচ্ছে না — ঠিকানা আরও স্পষ্ট করে লিখুন।';}}
 let checkoutSuggestionItems=[];
+function removeSelectedAreaFragments(address,selected){
+ const aliases=[selected.upazila,selected.district,...(CHECKOUT_SPELLING_ALIASES[selected.upazila]||[]),...(CHECKOUT_SPELLING_ALIASES[selected.district]||[]),...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[selected.district]||[])].filter(Boolean);
+ const compact=value=>normalizeCheckoutArea(value).replace(/\s+/g,'').replace(/[qkc]/g,'k').replace(/[iy]/g,'i').replace(/[ou]/g,'a').replace(/[zgj]/g,'j').replace(/[wb]/g,'b');
+ const targets=aliases.flatMap(value=>normalizeCheckoutArea(value).split(' ')).filter(word=>word.length>=4).map(compact);
+ const tokens=[...String(address||'').matchAll(/[\p{L}\p{N}]+/gu)];
+ const remove=new Set();
+ for(const token of tokens){
+  const word=compact(token[0]);
+  if(word.length<3)continue;
+  if(targets.some(target=>target.startsWith(word)||word.startsWith(target)))remove.add(token.index);
+ }
+ let result=String(address||'');
+ for(const token of tokens.reverse())if(remove.has(token.index))result=result.slice(0,token.index)+result.slice(token.index+token[0].length);
+ return result.replace(/\s+([,;،])/g,'$1').replace(/([,;،])\s*([,;،])/g,'$1').replace(/^\s*[,;،]+\s*|\s*[,;،]+\s*$/g,'').replace(/\s{2,}/g,' ').trim();
+}
+
 function renderAddressSuggestions(){
  const box=$('#address-suggestions'),raw=String($('#address')?.value||'').trim();
  if(!box)return;
@@ -128,7 +144,7 @@ function renderAddressSuggestions(){
  box.hidden=!checkoutSuggestionItems.length;
  box.querySelectorAll('[data-address-suggestion]').forEach(button=>button.onclick=()=>{
   const selected=checkoutSuggestionItems[Number(button.dataset.addressSuggestion)];if(!selected)return;
-  const address=$('#address'),parts=String(address.value||'').trim().replace(/[,;،]+$/,'');
+  const address=$('#address'),parts=removeSelectedAreaFragments(address.value,selected);
   const suffix=selected.upazila?(selected.district==='ঢাকা (শহর)'?'থানা: '+selected.upazila+', জেলা: ঢাকা (শহর)':'উপজেলা: '+selected.upazila+', জেলা: '+selected.district):'জেলা: '+selected.district;
   if(!parts.includes(selected.upazila||selected.district))address.value=parts+(parts?', ':'')+suffix;
   else if(selected.upazila&&!parts.includes(selected.district))address.value=parts+', জেলা: '+selected.district;
