@@ -359,7 +359,7 @@ const dhakaCityLocalities=[...dhakaExpandedLocalities,
  ['ধানমন্ডি','হ্যাপি আর্কেড',["happy arcade","হ্যাপি আর্কেড"]],
  ['ধানমন্ডি','কম্পিউটার সিটি সেন্টার',["computer city center","computer city centre","কম্পিউটার সিটি সেন্টার"]],
  ['ধানমন্ডি','সুভাস্তু আর্কেড',["suvastu arcade","subastu arcade","সুভাস্তু আর্কেড"]],
- ['ধানমন্ডি','মতলব প্লাজা',["motalib plaza","motolib plaza","মতলব প্লাজা"]],
+ ['ধানমন্ডি','মতলিব প্লাজা',["motalib plaza","motolib plaza","মতলব প্লাজা"]],
  ['শাহবাগ','আজিজ সুপার মার্কেট',["aziz super market","aziz market","আজিজ সুপার মার্কেট"]],
  ['শাহবাগ','শাহবাগ ফুলের বাজার',["shahbagh flower market","শাহবাগ ফুলের বাজার"]],
  ['তেজগাঁও','আইডিবি ভবন বিসিএস কম্পিউটার সিটি',["idb bhaban market","bcs computer city","idb computer city","আইডিবি ভবন"]],
@@ -405,7 +405,7 @@ const dhakaCityLocalities=[...dhakaExpandedLocalities,
  ['শেরে বাংলা নগর','শেরেবাংলা কৃষি বিশ্ববিদ্যালয়',["sher e bangla agricultural university","sau dhaka","শেরেবাংলা কৃষি বিশ্ববিদ্যালয়"]],
  ['তেজগাঁও','বাংলাদেশ টেক্সটাইল বিশ্ববিদ্যালয়',["bangladesh university of textiles","butex","বুটেক্স"]],
  ['ক্যান্টনমেন্ট','বাংলাদেশ ইউনিভার্সিটি অব প্রফেশনালস',["bangladesh university of professionals","bup","বিইউপি"]],
- ['সূত্রাপুর','জগন্নাথ বিশ্ববিদ্যালয়',["jagannath university","jnu","জগন্নাথ বিশ্ববিদ্যালয়"]],
+ ['কোতোয়ালি','জগন্নাথ বিশ্ববিদ্যালয়',["jagannath university","jnu","জগন্নাথ বিশ্ববিদ্যালয়"]],
  ['ভাটারা','নর্থ সাউথ বিশ্ববিদ্যালয়',["north south university","nsu","নর্থ সাউথ ইউনিভার্সিটি"]],
  ['ভাটারা','ইন্ডিপেনডেন্ট ইউনিভার্সিটি বাংলাদেশ',["independent university bangladesh","iub","আইইউবি"]],
  ['বাড্ডা','ব্র্যাক বিশ্ববিদ্যালয়',["brac university","bracu","ব্র্যাক ইউনিভার্সিটি"]],
@@ -416,7 +416,7 @@ const dhakaCityLocalities=[...dhakaExpandedLocalities,
  ['তেজগাঁও','সাউথইস্ট বিশ্ববিদ্যালয়',["southeast university","seu","সাউথইস্ট ইউনিভার্সিটি"]],
  ['ধানমন্ডি','ড্যাফোডিল ইন্টারন্যাশনাল ইউনিভার্সিটি',["daffodil international university","diu","ড্যাফোডিল বিশ্ববিদ্যালয়"]],
  ['রমনা','স্টামফোর্ড বিশ্ববিদ্যালয় বাংলাদেশ',["stamford university bangladesh","stamford university","স্টামফোর্ড বিশ্ববিদ্যালয়"]],
- ['মিরপুর মডেল','বাংলাদেশ ইউনিভার্সিটি অব বিজনেস অ্যান্ড টেকনোলজি',["bangladesh university of business and technology","bubt","বিইউবিটি"]],
+ ['রূপনগর','বাংলাদেশ ইউনিভার্সিটি অব বিজনেস অ্যান্ড টেকনোলজি',["bangladesh university of business and technology","bubt","বিইউবিটি"]],
  ['উত্তরা মডেল','ওয়ার্ল্ড ইউনিভার্সিটি অব বাংলাদেশ',["world university of bangladesh","wub","ওয়ার্ল্ড ইউনিভার্সিটি"]],
  ['উত্তরা মডেল','শান্ত-মারিয়াম ইউনিভার্সিটি অব ক্রিয়েটিভ টেকনোলজি',["shanto mariam university","smuct","শান্ত মারিয়াম বিশ্ববিদ্যালয়"]],
  ['উত্তরা মডেল','উত্তরা বিশ্ববিদ্যালয়',["uttara university","উত্তরা ইউনিভার্সিটি"]],
@@ -459,6 +459,7 @@ async function resolveAddressArea(address,providedDistrict='',providedUpazila=''
  }
  const text=raw+' '+pd+' '+pu+' '+explicitDistrict+' '+explicitUpazila;
  if(areaHas(text,'নীলক্ষেত')&&areaHas(text,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (শহর)',upazila:'নিউ মার্কেট'};
+ if(areaHasName(text,'ড্যাফোডিল ইন্টারন্যাশনাল ইউনিভার্সিটি')||areaHas(text,'daffodil international university')||areaHas(text,'diu'))return {district:'ঢাকা',upazila:'সাভার'};
  const cityLocality=dhakaCityLocalities.find(([thana,locality,aliases])=>areaHasName(text,locality)||(aliases||[]).some(alias=>areaHas(text,alias)));
  if(cityLocality)return {district:'ঢাকা (শহর)',upazila:cityLocality[0]};
  const metroSuburb=dhakaMetroSuburbAliases.find(([district,upazila,aliases])=>aliases.some(x=>areaHas(text,x)));
