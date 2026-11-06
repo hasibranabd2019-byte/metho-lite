@@ -8,9 +8,9 @@
 <label>আপনার নাম<input name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="সম্পূর্ণ নাম লিখুন"></label>
 <label>মোবাইল নম্বর<input name="phone" required inputmode="numeric" autocomplete="tel" maxlength="11" placeholder="01XXXXXXXXX"></label>
 <div class="wide location-box"><button type="button" id="use-location" class="location-button">📍 বর্তমান GPS লোকেশন নিন</button><span id="location-status" class="hint">আপনার বর্তমান অবস্থান থেকে ঠিকানা পূরণে সাহায্য করবে।</span></div>
-<label hidden>জেলা<select name="district" id="district"><option value="">জেলা নির্বাচন করুন</option></select></label>
-<label hidden>উপজেলা / থানা<select name="upazila" id="upazila"><option value="">আগে জেলা নির্বাচন করুন</option></select></label>
 <label class="wide">সম্পূর্ণ ঠিকানা<textarea name="address" id="address" required minlength="5" maxlength="500" placeholder="বাড়ি/রোড/এলাকা/গ্রাম লিখুন"></textarea></label>
+<div class="wide address-resolution" id="address-resolution" aria-live="polite"></div>
+<div class="wide manual-address-wrap"><button type="button" id="manual-address-toggle" class="manual-address-toggle" aria-expanded="false">নিজে জেলা ও উপজেলা নির্বাচন করুন <span aria-hidden="true">⌄</span></button><div id="manual-address-fields" class="manual-address-fields" hidden><label>জেলা<select name="district" id="district"><option value="">জেলা নির্বাচন করুন</option></select></label><label>উপজেলা / থানা<select name="upazila" id="upazila" disabled><option value="">আগে জেলা নির্বাচন করুন</option></select></label></div></div>
 <div id="delivery-summary" class="wide delivery-summary"><div class="delivery-row"><span>পণ্যের মোট দাম</span><strong>৳০</strong></div><div class="delivery-row"><span>ডেলিভারি চার্জ</span><strong>ঠিকানা ও পণ্য নির্বাচন করুন</strong></div><div class="delivery-row delivery-total"><span>মোট পরিশোধযোগ্য মূল্য</span><strong>৳০</strong></div><small class="delivery-words">(শূন্য টাকা)</small></div>
 <label class="wide">অতিরিক্ত তথ্য (ঐচ্ছিক)<textarea name="note" maxlength="300" placeholder="ডেলিভারি সংক্রান্ত নির্দেশনা"></textarea></label>
 <input type="hidden" name="latitude" id="latitude"><input type="hidden" name="longitude" id="longitude"></div>
