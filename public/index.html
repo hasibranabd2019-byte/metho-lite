@@ -7,7 +7,7 @@
 <section id="checkout" class="section checkout"><div class="section-heading"><span class="eyebrow">আপনার বাছাই করা পণ্য মিলিয়ে নিন</span><h2>মেঠো কার্ট 🛒</h2><p>সঠিক মোবাইল নম্বর ও সম্পূর্ণ ঠিকানা লিখুন।</p></div><form id="order-form"><div id="cart-summary" class="cart-summary">এখনো কোনো পণ্য নির্বাচন করা হয়নি।</div><div class="form-grid">
 <label>আপনার নাম<input name="name" required minlength="2" maxlength="80" autocomplete="name" placeholder="সম্পূর্ণ নাম লিখুন"></label>
 <label>মোবাইল নম্বর<input name="phone" required inputmode="numeric" autocomplete="tel" maxlength="11" placeholder="01XXXXXXXXX"></label>
-<div class="wide location-box"><button type="button" id="use-location" class="location-button">📍 বর্তমান GPS লোকেশন নিন</button><span id="location-status" class="hint">আপনার বর্তমান অবস্থান থেকে ঠিকানা পূরণে সাহায্য করবে।</span></div>
+<div class="wide location-box" hidden><!-- GPS button temporarily hidden; retain markup and JS for easy re-enable. --><button type="button" id="use-location" class="location-button">📍 বর্তমান GPS লোকেশন নিন</button><span id="location-status" class="hint">আপনার বর্তমান অবস্থান থেকে ঠিকানা পূরণে সাহায্য করবে।</span></div>
 <label class="wide">সম্পূর্ণ ঠিকানা<textarea name="address" id="address" required minlength="5" maxlength="500" placeholder="এলাকা/গ্রাম, উপজেলা, জেলা" autocomplete="street-address" aria-autocomplete="list" aria-controls="address-suggestions"></textarea></label>
 <div class="wide address-suggestions" id="address-suggestions" role="listbox" aria-label="ঠিকানার সাজেশন" hidden></div>
 <div class="wide address-resolution" id="address-resolution" aria-live="polite"></div>
