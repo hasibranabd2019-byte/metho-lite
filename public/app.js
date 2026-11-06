@@ -4,7 +4,7 @@ const DHAKA_THANAS=['আদাবর','এয়ারপোর্ট','বাড�
 const fallbackDistricts=['বাগেরহাট','বান্দরবান','বরগুনা','বরিশাল','ভোলা','বগুড়া','ব্রাহ্মণবাড়িয়া','চাঁদপুর','চট্টগ্রাম','চুয়াডাঙ্গা','কক্সবাজার','কুমিল্লা','ঢাকা','দিনাজপুর','ফরিদপুর','ফেনী','গাইবান্ধা','গাজীপুর','গোপালগঞ্জ','হবিগঞ্জ','জামালপুর','যশোর','ঝালকাঠি','ঝিনাইদহ','জয়পুরহাট','খাগড়াছড়ি','খুলনা','কিশোরগঞ্জ','কুড়িগ্রাম','কুষ্টিয়া','লক্ষ্মীপুর','লালমনিরহাট','মাদারীপুর','মাগুরা','মানিকগঞ্জ','মেহেরপুর','মৌলভীবাজার','মুন্সীগঞ্জ','ময়মনসিংহ','নওগাঁ','নড়াইল','নারায়ণগঞ্জ','নরসিংদী','নাটোর','নেত্রকোণা','নীলফামারী','নোয়াখালী','পাবনা','পঞ্চগড়','পটুয়াখালী','পিরোজপুর','রাজবাড়ী','রাজশাহী','রাঙ্গামাটি','রংপুর','সাতক্ষীরা','শরীয়তপুর','শেরপুর','সিরাজগঞ্জ','সুনামগঞ্জ','সিলেট','টাঙ্গাইল','ঠাকুরগাঁও'];
 async function api(path,opt={}){const r=await fetch(path,{...opt,headers:{'content-type':'application/json',...(opt.headers||{})}}),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||'অনুরোধ ব্যর্থ');return d;}
 function fillSelect(el,items,placeholder){el.innerHTML='<option value="">'+placeholder+'</option>'+items.map(x=>'<option value="'+esc(x.bn_name||x)+'">'+esc(x.bn_name||x)+'</option>').join('');}
-async function loadLocations(){const d=$('#district'),u=$('#upazila');fillSelect(d,[...new Set([...fallbackDistricts,'ঢাকা (শহর)'])].sort((a,b)=>a.localeCompare(b,'bn')),'জেলা নির্বাচন করুন');let loading=null;const ensureGeoData=()=>{if(bdTree.length)return Promise.resolve(bdTree);if(!loading)loading=fetch('https://iqbalhasandev.github.io/bangladesh-geo-json/bangladesh-geo.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{bdTree=data;const selected=d.value,list=bdTree.flatMap(x=>x.districts||[]);if(!list.some(x=>x.bn_name==='ঢাকা (শহর)'))list.push({bn_name:'ঢাকা (শহর)'});list.sort((a,b)=>a.bn_name.localeCompare(b.bn_name,'bn'));fillSelect(d,list,'জেলা নির্বাচন করুন');if(selected)d.value=selected;return bdTree;}).catch(()=>{loading=null;return bdTree;});return loading;};const renderUpazilas=()=>{const isDhakaCity=d.value==='ঢাকা (শহর)',found=bdTree.flatMap(x=>x.districts||[]).find(x=>x.bn_name===d.value),list=(isDhakaCity?DHAKA_THANAS:(found?.upazilas||[])).slice().sort((a,b)=>String(a.bn_name||a).localeCompare(String(b.bn_name||b),'bn'));fillSelect(u,list,d.value?(list.length?'উপজেলা / থানা নির্বাচন করুন':'তালিকা পাওয়া যায়নি'):'আগে জেলা নির্বাচন করুন');u.disabled=!d.value;u.required=isDhakaCity;};d.onfocus=()=>{ensureGeoData().then(renderUpazilas);};d.onchange=()=>{if(bdTree.length)renderUpazilas();else{u.disabled=true;u.innerHTML='<option value="">উপজেলার তালিকা লোড হচ্ছে…</option>';ensureGeoData().then(renderUpazilas);}};return {ensureGeoData};}
+async function loadLocations(){const d=$('#district'),u=$('#upazila');fillSelect(d,[...new Set([...fallbackDistricts,'ঢাকা (সিটি)'])].sort((a,b)=>a.localeCompare(b,'bn')),'জেলা নির্বাচন করুন');let loading=null;const ensureGeoData=()=>{if(bdTree.length)return Promise.resolve(bdTree);if(!loading)loading=fetch('https://iqbalhasandev.github.io/bangladesh-geo-json/bangladesh-geo.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error();return r.json();}).then(data=>{bdTree=data;const selected=d.value,list=bdTree.flatMap(x=>x.districts||[]);if(!list.some(x=>x.bn_name==='ঢাকা (সিটি)'))list.push({bn_name:'ঢাকা (সিটি)'});list.sort((a,b)=>a.bn_name.localeCompare(b.bn_name,'bn'));fillSelect(d,list,'জেলা নির্বাচন করুন');if(selected)d.value=selected;return bdTree;}).catch(()=>{loading=null;return bdTree;});return loading;};const renderUpazilas=()=>{const isDhakaCity=d.value==='ঢাকা (সিটি)',found=bdTree.flatMap(x=>x.districts||[]).find(x=>x.bn_name===d.value),list=(isDhakaCity?DHAKA_THANAS:(found?.upazilas||[])).slice().sort((a,b)=>String(a.bn_name||a).localeCompare(String(b.bn_name||b),'bn'));fillSelect(u,list,d.value?(list.length?'উপজেলা / থানা নির্বাচন করুন':'তালিকা পাওয়া যায়নি'):'আগে জেলা নির্বাচন করুন');u.disabled=!d.value;u.required=isDhakaCity;};d.onfocus=()=>{ensureGeoData().then(renderUpazilas);};d.onchange=()=>{if(bdTree.length)renderUpazilas();else{u.disabled=true;u.innerHTML='<option value="">উপজেলার তালিকা লোড হচ্ছে…</option>';ensureGeoData().then(renderUpazilas);}};return {ensureGeoData};}
 function renderBanners(banners){const host=$('#hero-slides'),dots=$('#hero-dots');const list=(banners||[]).filter(x=>x.image_url);host.innerHTML=list.map((b,i)=>'<div class="hero-slide '+(i===0?'active':'')+'"><img src="'+esc(b.image_url)+'" alt="'+esc(b.alt_text||'মেঠো')+'" loading="'+(i===0?'eager':'lazy')+'" decoding="async" '+(i===0?'fetchpriority="high"':'')+'></div>').join('');dots.innerHTML=list.length>1?list.map((_,i)=>'<button type="button" data-dot="'+i+'" class="'+(!i?'active':'')+'" aria-label="ব্যানার '+(i+1)+'"></button>').join(''):'';if(list.length>1){let index=0;const show=n=>{index=(n+list.length)%list.length;host.querySelectorAll('.hero-slide').forEach((x,i)=>x.classList.toggle('active',i===index));dots.querySelectorAll('button').forEach((x,i)=>x.classList.toggle('active',i===index));};dots.querySelectorAll('button').forEach(x=>x.onclick=()=>show(Number(x.dataset.dot)));setInterval(()=>show(index+1),5000);}}
 async function loadConfig(){try{const d=await api('/api/config'),s=d.settings||{};if(s.logo_url)$('#brand-logo').src=s.logo_url;if(s.phone){const p=String(s.phone).replace(/[^+0-9]/g,'');$('#call-button').href='tel:'+p;$('#call-button').hidden=false;}if(s.primary_color)document.documentElement.style.setProperty('--green',s.primary_color);if(s.accent_color)document.documentElement.style.setProperty('--gold',s.accent_color);const social=$('#social-links');social.innerHTML=(s.whatsapp_link?'<a class="whatsapp" target="_blank" rel="noopener" aria-label="WhatsApp" href="'+esc(s.whatsapp_link)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.52 3.48A11.86 11.86 0 0 0 12.06 0C5.5 0 .16 5.33.16 11.9c0 2.1.55 4.15 1.6 5.96L0 24l6.3-1.65a11.9 11.9 0 0 0 5.75 1.47h.01c6.56 0 11.9-5.34 11.9-11.9 0-3.18-1.24-6.17-3.44-8.44ZM12.06 21.8a9.9 9.9 0 0 1-5.04-1.38l-.36-.21-3.74.98 1-3.65-.24-.38a9.85 9.85 0 1 1 8.38 4.64Zm5.42-7.38c-.3-.15-1.77-.87-2.05-.97-.28-.1-.48-.15-.68.15-.2.3-.78.97-.95 1.17-.18.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.88-.78-1.48-1.74-1.65-2.04-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.07-.8.38-.28.3-1.05 1.02-1.05 2.49s1.08 2.88 1.23 3.08c.15.2 2.12 3.24 5.14 4.54.72.31 1.28.5 1.72.64.72.23 1.37.2 1.89.12.58-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.18-1.42-.08-.13-.28-.2-.58-.35Z"/></svg><span>WhatsApp</span></a>':'')+(s.messenger_link?'<a class="messenger" target="_blank" rel="noopener" aria-label="Messenger" href="'+esc(s.messenger_link)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 0C5.1 0 0 4.9 0 11.5c0 3.45 1.42 6.53 3.72 8.62.2.18.32.43.33.7l.07 2.2a.7.7 0 0 0 .98.63l2.46-1.08c.21-.1.45-.11.67-.05.12.03.24.06.36.08.99.23 2.12.35 3.41.35 6.9 0 12-4.9 12-11.45C24 4.9 18.9 0 12 0Zm1.2 15.47-3.05-3.25a.9.9 0 0 0-1.1-.16l-3.36 1.8c-.36.2-.75-.2-.52-.55l3.25-4.86a.9.9 0 0 1 1.38-.13l3.05 3.25a.9.9 0 0 0 1.1.16l3.36-1.8c.36-.2.75.2.52.55l-3.25 4.86a.9.9 0 0 1-1.38.13Z"/></svg><span>Messenger</span></a>':'');renderBanners(d.banners||[]);}catch(e){console.warn('Site settings unavailable',e);}}
 const productQty=new Map();
@@ -57,6 +57,111 @@ function checkoutSuggestionMatches(query,name,extraNames=[]){
 }
 
 const CHECKOUT_DHAKA_THANAS=['মিরপুর','পল্লবী','রূপনগর','শাহ আলী','দারুস সালাম','কাফরুল','ভাষানটেক','ক্যান্টনমেন্ট','বাড্ডা','ভাটারা','গুলশান','বনানী','তেজগাঁও','শেরে বাংলা নগর','মোহাম্মদপুর','আদাবর','ধানমন্ডি','কলাবাগান','রমনা','শাহবাগ','পল্টন','মতিঝিল','শাহজাহানপুর','খিলগাঁও','রামপুরা','মুগদা','সবুজবাগ','যাত্রাবাড়ী','কদমতলী','ডেমরা','শ্যামপুর','সূত্রাপুর','ওয়ারী','গেন্ডারিয়া','বংশাল','লালবাগ','চকবাজার','হাজারীবাগ','কামরাঙ্গীরচর','নিউ মার্কেট','উত্তরা','দক্ষিণখান','উত্তরখান','খিলক্ষেত','তুরাগ','এয়ারপোর্ট'];
+const CHECKOUT_DHAKA_LOCALITIES=[
+ ['ওয়ারী','টিকাটুলি',['tikatuli','tikatuly','tikatuIi']],
+ ['ওয়ারী','ওয়ারী',['wari','wary']],
+ ['ওয়ারী','র‍্যাঙ্কিন স্ট্রিট',['rankin street','rankin st']],
+  ['সূত্রাপুর','নারিন্দা',['narinda','narinda road']],
+ ['সূত্রাপুর','লক্ষ্মীবাজার',['laxmibazar','laxmi bazar','luxmibazar']],
+  ['সূত্রাপুর','ধোলাইখাল',['dholaikhal','dholaikhaal']],
+ ['গেন্ডারিয়া','গেন্ডারিয়া',['gendaria','gandaria']],
+ ['সূত্রাপুর','সদরঘাট',['sadarghat','sadar ghat']],
+ ['সূত্রাপুর','ইসলামপুর',['islampur','islam pur']],
+ ['সূত্রাপুর','পাটুয়াটুলী',['patuatuli','patuatولي']],
+ ['কোতোয়ালি','বাংলাবাজার',['banglabazar','bangla bazar']],
+ ['কোতোয়ালি','বাবুবাজার',['babubazar','babu bazar']],
+ ['কোতোয়ালি','আর্মানিটোলা',['armanitola','arman itola']],
+ ['বংশাল','বংশাল',['bangshal','banshal']],
+ ['বংশাল','নবাবপুর',['nawabpur','nawab pur']],
+ ['বংশাল','বেগমবাজার',['begumbazar','begum bazar']],
+ ['চকবাজার','চকবাজার',['chawkbazar','chowkbazar','chawk bazar']],
+ ['চকবাজার','শাঁখারীবাজার',['shankharibazar','shakhari bazar']],
+ ['চকবাজার','তাঁতীবাজার',['tantibazar','tanti bazar']],
+ ['লালবাগ','লালবাগ',['lalbagh','lalbag']],
+ ['লালবাগ','আজিমপুর',['azimpur','azimpore']],
+ ['লালবাগ','পলাশী',['palashi','palasi']],
+ ['হাজারীবাগ','হাজারীবাগ',['hazaribagh','hazaribag']],
+ ['কামরাঙ্গীরচর','কামরাঙ্গীরচর',['kamrangirchar','kamrangir chor']],
+ ['মতিঝিল','মতিঝিল',['motijheel','motijhil']],
+ ['মতিঝিল','দিলকুশা',['dilkusha','dilkusha']],
+ ['মতিঝিল','ফকিরাপুল',['fakirapool','fakirapul']],
+ ['মতিঝিল','আরামবাগ',['arambagh','aram bag']],
+ ['মতিঝিল','শাপলা চত্বর',['shapla chattar','shapla chottor']],
+ ['পল্টন','পল্টন',['paltan']],
+ ['পল্টন','গুলিস্তান',['gulistan']],
+ ['পল্টন','কাকরাইল',['kakrail','kakra il']],
+ ['পল্টন','সেগুনবাগিচা',['segunbagicha','segun bagicha']],
+ ['রমনা','রমনা',['ramna']],
+ ['রমনা','শাহবাগ',['shahbag','shahbagh']],
+ ['রমনা','বাংলামোটর',['banglamotor','bangla motor']],
+ ['রমনা','পরীবাগ',['paribagh','pari bagh']],
+ ['রমনা','মগবাজার',['moghbazar','mogbazar']],
+ ['রমনা','ইস্কাটন',['eskaton','iskaton']],
+ ['শাহজাহানপুর','শান্তিনগর',['shantinagar','shanti nagar']],
+ ['শাহজাহানপুর','মালিবাগ',['malibagh','malibag']],
+ ['শাহজাহানপুর','রাজারবাগ',['rajarbagh','rajarbag']],
+ ['ধানমন্ডি','ধানমন্ডি',['dhanmondi']],
+ ['ধানমন্ডি','জিগাতলা',['jigatola','zigatola']],
+ ['ধানমন্ডি','কলাবাগান',['kalabagan','kalabagh']],
+ ['ধানমন্ডি','হাতিরপুল',['hatirpool','hatir pul']],
+ ['ধানমন্ডি','এলিফ্যান্ট রোড',['elephant road']],
+ ['নিউ মার্কেট','নিউ মার্কেট',['new market','newmarket']],
+ ['নিউ মার্কেট','নীলক্ষেত',['nilkhet','nil khet']],
+ ['নিউ মার্কেট','কাঁটাবন',['katabon','kata bon']],
+ ['নিউ মার্কেট','সায়েন্স ল্যাব',['science lab','sciencelab']],
+ ['মোহাম্মদপুর','আসাদ গেট',['asad gate','asadgate']],
+ ['মোহাম্মদপুর','টাউন হল',['town hall','townhall']],
+ ['মোহাম্মদপুর','কৃষি মার্কেট',['krishi market','krishi bazar']],
+ ['মোহাম্মদপুর','জেনেভা ক্যাম্প',['geneva camp']],
+ ['মোহাম্মদপুর','লালমাটিয়া',['lalmatia']],
+ ['মোহাম্মদপুর','রায়েরবাজার',['rayerbazar','rayer bazar']],
+ ['আদাবর','শ্যামলী',['shyamoli']],
+ ['আদাবর','আদাবর',['adabor','adabar']],
+ ['আদাবর','বসিলা',['bosila','basila']],
+ ['মিরপুর মডেল','মিরপুর ১',['mirpur 1','mirpur one']],
+ ['মিরপুর মডেল','মিরপুর ২',['mirpur 2','mirpur two']],
+ ['মিরপুর মডেল','মিরপুর ১০',['mirpur 10','mirpur ten']],
+ ['পল্লবী','মিরপুর ১১',['mirpur 11','mirpur eleven']],
+ ['পল্লবী','মিরপুর ১২',['mirpur 12','mirpur twelve']],
+ ['পল্লবী','পল্লবী',['pallabi','pallaby']],
+ ['কাফরুল','কাজীপাড়া',['kazipara','kazi para']],
+ ['কাফরুল','শেওড়াপাড়া',['shewrapara','sheorapara']],
+ ['কাফরুল','ইব্রাহিমপুর',['ibrahimpur']],
+ ['শাহ আলী','রূপনগর',['rupnagar','rup nagar']],
+ ['দারুস সালাম','গাবতলী',['gabtoli','gabtoli']],
+ ['তেজগাঁও','ফার্মগেট',['farmgate','farm gate']],
+ ['তেজগাঁও','কারওয়ান বাজার',['karwan bazar','karwanbazar']],
+ ['তেজগাঁও','নাখালপাড়া',['nakhalpara']],
+ ['তেজগাঁও','তেজতুরী বাজার',['tejturibazar','tejturi bazar']],
+ ['বনানী','বনানী',['banani']],
+ ['বনানী','মহাখালী',['mohakhali','mohakhali']],
+ ['গুলশান','গুলশান',['gulshan']],
+ ['গুলশান','নিকেতন',['niketan']],
+ ['গুলশান','বারিধারা',['baridhara']],
+ ['গুলশান','শাহজাদপুর',['shahjadpur','shahzadpur']],
+ ['বাড্ডা','বাড্ডা',['badda']],
+ ['বাড্ডা','নতুন বাজার',['natun bazar','notun bazar']],
+ ['বাড্ডা','আফতাবনগর',['aftabnagar','aftab nagar']],
+ ['রামপুরা','রামপুরা',['rampura']],
+ ['রামপুরা','বনশ্রী',['bansree','bashree']],
+ ['খিলক্ষেত','খিলক্ষেত',['khilkhet']],
+ ['খিলক্ষেত','কুড়িল',['kuril']],
+ ['খিলক্ষেত','নিকুঞ্জ',['nikunja','nikunjo']],
+ ['উত্তরা মডেল','উত্তরা',['uttara']],
+ ['উত্তরা মডেল','আজমপুর',['azampur']],
+ ['উত্তরা মডেল','আব্দুল্লাহপুর',['abdullahpur']],
+ ['উত্তরা মডেল','দিয়াবাড়ি',['diabari']],
+ ['দক্ষিণখান','দক্ষিণখান',['dakshinkhan','dakkhin khan']],
+ ['উত্তরখান','উত্তরখান',['uttarkhan']],
+ ['যাত্রাবাড়ী','যাত্রাবাড়ী',['jatrabari','jatrabari']],
+ ['যাত্রাবাড়ী','সায়েদাবাদ',['sayedabad','saydabad']],
+ ['যাত্রাবাড়ী','শনির আখড়া',['shonir akhra','shanir akhra']],
+ ['খিলগাঁও','খিলগাঁও',['khilgaon']],
+ ['খিলগাঁও','গোড়ান',['goran']],
+ ['সবুজবাগ','বাসাবো',['basabo','bashabo']],
+ ['সবুজবাগ','মুগদা',['mugda']],
+ ['সবুজবাগ','মান্ডা',['manda']]
+];
 const CHECKOUT_DISTRICTS=['ঝিনাইদহ','ঢাকা','চট্টগ্রাম','কুমিল্লা','বগুড়া','যশোর','বরিশাল','কক্সবাজার','ময়মনসিংহ','নোয়াখালী','ফরিদপুর','গাজীপুর','নারায়ণগঞ্জ','নরসিংদী','মুন্সীগঞ্জ','মানিকগঞ্জ','টাঙ্গাইল','কিশোরগঞ্জ','গোপালগঞ্জ','মাদারীপুর','রাজবাড়ী','শরীয়তপুর','চাঁদপুর','লক্ষ্মীপুর','ফেনী','ব্রাহ্মণবাড়িয়া','খুলনা','সাতক্ষীরা','বাগেরহাট','নড়াইল','মাগুরা','কুষ্টিয়া','চুয়াডাঙ্গা','মেহেরপুর','রাজশাহী','নাটোর','নওগাঁ','পাবনা','সিরাজগঞ্জ','জয়পুরহাট','চাঁপাইনবাবগঞ্জ','রংপুর','দিনাজপুর','গাইবান্ধা','কুড়িগ্রাম','লালমনিরহাট','নীলফামারী','পঞ্চগড়','ঠাকুরগাঁও','সিলেট','সুনামগঞ্জ','মৌলভীবাজার','হবিগঞ্জ','জামালপুর','শেরপুর','নেত্রকোণা','বরগুনা','পটুয়াখালী','ভোলা','পিরোজপুর','ঝালকাঠি','রাঙ্গামাটি','খাগড়াছড়ি','বান্দরবান'];
 function resolveCheckoutArea(address){
  const full=String(address||''),districts=bdTree.flatMap(x=>x.districts||[]);
@@ -64,7 +169,7 @@ function resolveCheckoutArea(address){
  const upazilaLabel=full.match(/(?:উপজেলা|upazila|upzilla|থানা|thana)\s*[:：-]?\s*([^,;،]+)/i)?.[1]?.trim()||full.match(/([^,;،]+?)\s*(?:উপজেলা|upazila|upzilla|থানা|thana)\s*$/i)?.[1]?.trim()||'';
  const matchDistrict=value=>districts.filter(d=>checkoutAreaHasName(value,d.bn_name)||checkoutAreaHas(value,d.en_name));
  const matchUpazilas=(value,scope=districts)=>scope.flatMap(d=>(d.upazilas||[]).filter(u=>checkoutAreaHasName(value,u.bn_name)||checkoutAreaHas(value,u.en_name)).map(u=>({district:d.bn_name,upazila:u.bn_name})));
- if(checkoutAreaHas(full,'নীলক্ষেত')&&checkoutAreaHas(full,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (শহর)',upazila:'নিউ মার্কেট'};
+ if(checkoutAreaHas(full,'নীলক্ষেত')&&checkoutAreaHas(full,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (সিটি)',upazila:'নিউ মার্কেট'};\n const cityLocality=CHECKOUT_DHAKA_LOCALITIES.find(([thana,locality,aliases])=>checkoutAreaHasName(full,locality)||(aliases||[]).some(alias=>checkoutAreaHas(full,alias)));\n if(cityLocality)return {district:'ঢাকা (সিটি)',upazila:cityLocality[0]};
  const explicitDistricts=districtLabel?matchDistrict(districtLabel):[];
  if(explicitDistricts.length===1){
   const d=explicitDistricts[0],explicitUps=upazilaLabel?matchUpazilas(upazilaLabel,[d]):matchUpazilas(full,[d]);
@@ -80,7 +185,7 @@ function resolveCheckoutArea(address){
  }
  const hasDhaka=checkoutAreaHasName(full,'ঢাকা')||checkoutAreaHas(full,'dhaka');
  const dhakaThana=CHECKOUT_DHAKA_THANAS.find(x=>checkoutAreaHasName(full,x));
- if(hasDhaka&&dhakaThana&&/(মিরপুর|উত্তরা|পল্লবী|গুলশান|ধানমন্ডি|বাড্ডা|মোহাম্মদপুর|নীলক্ষেত|এয়ারপোর্ট|বিমানবন্দর|ঢাকা শহর|dhaka city|mirpur|uttara|pallabi|gulshan|dhanmondi|badda|mohammadpur)/i.test(full))return {district:'ঢাকা (শহর)',upazila:dhakaThana};
+ if(hasDhaka&&dhakaThana&&/(মিরপুর|উত্তরা|পল্লবী|গুলশান|ধানমন্ডি|বাড্ডা|মোহাম্মদপুর|নীলক্ষেত|এয়ারপোর্ট|বিমানবন্দর|ঢাকা শহর|dhaka city|mirpur|uttara|pallabi|gulshan|dhanmondi|badda|mohammadpur)/i.test(full))return {district:'ঢাকা (সিটি)',upazila:dhakaThana};
  if(bdTree.length){
   const namedDistricts=matchDistrict(full),upMatches=matchUpazilas(full);
   const uniqueUps=[...new Map(upMatches.map(x=>[x.district+'|'+x.upazila,x])).values()];
@@ -95,14 +200,14 @@ function resolveCheckoutArea(address){
   if(namedDistricts.length>1)return {district:'',upazila:''};
  }
  const thana=CHECKOUT_DHAKA_THANAS.find(x=>checkoutAreaHasName(full,x));
- if(thana&&hasDhaka)return {district:'ঢাকা (শহর)',upazila:thana};
- if((checkoutAreaHas(full,'ঢাকা শহর')||checkoutAreaHas(full,'dhaka city'))&&hasDhaka)return {district:'ঢাকা (শহর)',upazila:'ঢাকা শহর'};
+ if(thana&&hasDhaka)return {district:'ঢাকা (সিটি)',upazila:thana};
+ if((checkoutAreaHas(full,'ঢাকা শহর')||checkoutAreaHas(full,'dhaka city'))&&hasDhaka)return {district:'ঢাকা (সিটি)',upazila:'ঢাকা শহর'};
  if(checkoutAreaHasName(full,'মহেশপুর'))return {district:'ঝিনাইদহ',upazila:'মহেশপুর'};
  const district=CHECKOUT_DISTRICTS.find(x=>checkoutAreaHasName(full,x));
  return {district:district||'',upazila:''};
 }
 function selectedCheckoutArea(){const district=$('#district')?.value||'',upazila=$('#upazila')?.value||'';if(district&&upazila)return {district,upazila,manual:true};if(checkoutSuggestedArea&&checkoutSelectedAreaSuffix&&String($('#address')?.value||'').includes(checkoutSelectedAreaSuffix))return checkoutSuggestedArea;return null;}
-function updateAddressResolution(){const box=$('#address-resolution');if(!box)return;const raw=String($('#address')?.value||'').trim(),manual=selectedCheckoutArea(),area=manual||resolveCheckoutArea(raw);if(!raw&&!manual){box.textContent='';return;}if(area.district&&area.upazila){const city=area.district==='ঢাকা (শহর)';box.textContent=(city?'থানা: ':'উপজেলা: ')+area.upazila+' · জেলা: '+area.district;}else if(area.district){box.textContent='জেলা: '+area.district+' · উপজেলা/থানা নিশ্চিত নয়';}else{box.textContent='এলাকা শনাক্ত করা যাচ্ছে না — ঠিকানা আরও স্পষ্ট করে লিখুন।';}}
+function updateAddressResolution(){const box=$('#address-resolution');if(!box)return;const raw=String($('#address')?.value||'').trim(),manual=selectedCheckoutArea(),area=manual||resolveCheckoutArea(raw);if(!raw&&!manual){box.textContent='';return;}if(area.district&&area.upazila){const city=area.district==='ঢাকা (সিটি)';box.textContent=(city?'থানা: ':'উপজেলা: ')+area.upazila+' · জেলা: '+area.district;}else if(area.district){box.textContent='জেলা: '+area.district+' · উপজেলা/থানা নিশ্চিত নয়';}else{box.textContent='এলাকা শনাক্ত করা যাচ্ছে না — ঠিকানা আরও স্পষ্ট করে লিখুন।';}}
 let checkoutSuggestionItems=[],checkoutSelectedAreaSuffix='',checkoutSuggestedArea=null,addressSuggestionTimer=null;
 function removeSelectedAreaFragments(address,selected){
  const aliases=[selected.upazila,selected.district,...(selected.locationAliases||[]),...(CHECKOUT_SPELLING_ALIASES[selected.upazila]||[]),...(CHECKOUT_SPELLING_ALIASES[selected.district]||[]),...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[selected.district]||[])].filter(Boolean);
@@ -148,14 +253,14 @@ function renderAddressSuggestions(){
  }
  const districts=bdTree.flatMap(x=>x.districts||[]),items=[];
  const matchesAny=(names)=>queries.some(q=>checkoutSuggestionMatches(q,names[0],names.slice(1)));
- const add=(district,upazila,name,englishNames=[])=>{
+ const add=(district,upazila,name,englishNames=[],displayName='')=>{
   const districtNames=[district,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[district]||[])];
   const locationNames=[name||upazila||district,...(CHECKOUT_SPELLING_ALIASES[name||upazila||district]||[]),...englishNames];
   const districtMatched=matchesAny(districtNames),locationMatched=matchesAny(locationNames);
   if(!districtMatched&&!locationMatched)return;
-  const key=district+'|'+upazila;
+  const key=district+'|'+upazila+'|'+name;
   if(items.some(x=>x.key===key))return;
-  items.push({key,district,upazila,label:upazila?upazila+', '+district:district,districtMatched,locationMatched,locationAliases:locationNames,matchScore:(locationMatched?4:0)+(districtMatched?2:0)});
+  items.push({key,district,upazila,label:displayName?displayName+', '+district:(upazila?upazila+', '+district:district),localityName:displayName,districtMatched,locationMatched,locationAliases:locationNames,matchScore:(locationMatched?4:0)+(districtMatched?2:0)});
  };
  for(const d of districts){
   add(d.bn_name,'',d.bn_name,[d.en_name,d.name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);
@@ -163,7 +268,7 @@ function renderAddressSuggestions(){
  }
  // Keep suggestions useful even when the external geography file is unavailable.
  for(const district of CHECKOUT_DISTRICTS)add(district,'',district);
- for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (শহর)',thana,thana);
+ for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (সিটি)',thana,thana);\n for(const [thana,locality,aliases] of CHECKOUT_DHAKA_LOCALITIES)add('ঢাকা (সিটি)',thana,locality,aliases,locality);
  add('চুয়াডাঙ্গা','জীবননগর','জীবননগর');
  add('ঝিনাইদহ','মহেশপুর','মহেশপুর');
  const explicitDistricts=[...new Set([...districts.map(d=>d.bn_name),...CHECKOUT_DISTRICTS].filter(name=>matchesAny([name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[])])))];
@@ -172,20 +277,20 @@ function renderAddressSuggestions(){
  const relevantItems=explicitDistricts.length?items.filter(x=>(explicitDistricts.includes(x.district)&&(!x.upazila||x.locationMatched))||(x.upazila&&x.locationMatched)):items;
  relevantItems.sort((a,b)=>b.matchScore-a.matchScore);
  checkoutSuggestionItems=relevantItems.slice(0,7);
- box.innerHTML=checkoutSuggestionItems.map((x,i)=>'<button type="button" class="address-suggestion" role="option" aria-selected="false" data-address-suggestion="'+i+'"><span class="address-suggestion-name">'+esc(x.label)+'</span><small>'+(x.upazila?(x.district==='ঢাকা (শহর)'?'থানা':'উপজেলা'):'জেলা')+'</small></button>').join('');
+ box.innerHTML=checkoutSuggestionItems.map((x,i)=>'<button type="button" class="address-suggestion" role="option" aria-selected="false" data-address-suggestion="'+i+'"><span class="address-suggestion-name">'+esc(x.label)+'</span><small>'+(x.upazila?(x.district==='ঢাকা (সিটি)'?'থানা':'উপজেলা'):'জেলা')+'</small></button>').join('');
  box.hidden=!checkoutSuggestionItems.length;
  box.querySelectorAll('[data-address-suggestion]').forEach(button=>button.onclick=()=>{
   const selected=checkoutSuggestionItems[Number(button.dataset.addressSuggestion)];if(!selected)return;
   const address=$('#address'),parts=removeSelectedAreaFragments(address.value,selected);
-  const suffix=selected.upazila?(selected.district==='ঢাকা (শহর)'?'থানা: '+selected.upazila+', জেলা: ঢাকা (শহর)':'উপজেলা: '+selected.upazila+', জেলা: '+selected.district):'জেলা: '+selected.district;
+  const suffix=selected.upazila?(selected.district==='ঢাকা (সিটি)'?(selected.localityName?'এলাকা: '+selected.localityName+', ':'')+'থানা: '+selected.upazila+', জেলা: ঢাকা (সিটি)':'উপজেলা: '+selected.upazila+', জেলা: '+selected.district):'জেলা: '+selected.district;
   if(!parts.includes(selected.upazila||selected.district))address.value=parts+(parts?', ':'')+suffix;
   else if(selected.upazila&&!parts.includes(selected.district))address.value=parts+', জেলা: '+selected.district;
   checkoutSelectedAreaSuffix=suffix;checkoutSuggestedArea={district:selected.district,upazila:selected.upazila||'',suggested:true};box.hidden=true;checkoutSuggestionItems=[];updateAddressResolution();renderCheckoutTotals();address.focus();
  });
 }
 
-function deliveryCharge(district,grams){const d=String(district||'').trim().toLowerCase().replace(/[\s।,().-]/g,'');const kg=grams/1000;if(!district||!grams)return 0;if(d==='ঝিনাইদহ'||d==='jhenaidah')return 6000+Math.max(0,Math.ceil(kg)-1)*2000;if(d==='ঢাকাশহর')return 11500+Math.max(0,Math.ceil(kg)-1)*2000;if(grams<=500)return 11500;if(grams<=1000)return 13500;return 13500+Math.max(0,Math.ceil(kg)-1)*2000;}let deliveryDetailsOpen=false;
-function renderCheckoutTotals(){const box=$('#delivery-summary');if(!box)return;const subtotal=[...cart.values()].reduce((s,x)=>s+x.unit_price_paisa*x.quantity,0),grams=[...cart.values()].reduce((s,x)=>s+Number(x.weight_kg||0)*1000*x.quantity,0),area=selectedCheckoutArea()||resolveCheckoutArea($('#address')?.value||''),hasAddress=String($('#address')?.value||'').trim().length>=5,district=area.district||'',normalized=String(district).trim().toLowerCase().replace(/[\s।,().-]/g,''),baseFee=deliveryCharge(district,grams),payment=document.querySelector('input[name="payment"]:checked')?.value||'cod',codFee=baseFee&&payment==='cod'?Math.ceil(subtotal/100):0,fee=baseFee+codFee,total=subtotal+fee,extraKg=Math.max(0,Math.ceil(grams/1000)-1);let rateText='',weightText=grams?(grams>=1000?(grams/1000).toLocaleString('bn-BD',{maximumFractionDigits:2})+' কেজি':grams.toLocaleString('bn-BD')+' গ্রাম'):'—';if(!district||!grams)rateText='সম্পূর্ণ ঠিকানা ও পণ্য নির্বাচন করলে কুরিয়ার চার্জের হিসাব দেখা যাবে।';else if(normalized==='ঝিনাইদহ'||normalized==='jhenaidah')rateText='প্রথম ১ কেজি '+money(6000)+' + অতিরিক্ত প্রতি কেজি '+money(2000);else if(normalized==='ঢাকাশহর')rateText='প্রথম ১ কেজি '+money(11500)+' + অতিরিক্ত প্রতি কেজি '+money(2000);else if(grams<=500)rateText='৫০০ গ্রাম পর্যন্ত নির্ধারিত চার্জ '+money(11500);else if(grams<=1000)rateText='৫০১ গ্রাম থেকে ১ কেজি পর্যন্ত নির্ধারিত চার্জ '+money(13500);else rateText='প্রথম ১ কেজি '+money(13500)+' + অতিরিক্ত প্রতি কেজি '+money(2000);const rows=(!district||!grams)?'':'<div class="delivery-detail-row"><span>পাঠানোর স্থান:</span><strong>ঝিনাইদহ → '+esc(district)+'</strong></div><div class="delivery-detail-row"><span>ঠিকানা শনাক্ত:</span><strong>'+esc(area.district?(area.upazila||area.district):'নিশ্চিত নয় — সাধারণ রেট')+'</strong></div><div class="delivery-detail-row"><span>পণ্যের ওজন:</span><strong>'+weightText+'</strong></div><div class="delivery-detail-row"><span>কুরিয়ার রেট:</span><strong>'+rateText+'</strong></div>'+(extraKg?'<div class="delivery-detail-row"><span>অতিরিক্ত ওজন:</span><strong>'+extraKg.toLocaleString('bn-BD')+' কেজি × '+money(2000)+' = '+money(extraKg*2000)+'</strong></div>':'')+'<div class="delivery-detail-row"><span>কুরিয়ার চার্জ:</span><strong>'+money(baseFee)+'</strong></div>'+(payment==='cod'?'<div class="delivery-detail-row"><span>COD (১%):</span><strong>'+money(codFee)+'</strong></div>':'<div class="delivery-detail-row"><span>COD:</span><strong>নেই (অগ্রিম পেমেন্ট)</strong></div>')+'<div class="delivery-detail-row delivery-detail-total"><span>মোট ডেলিভারি:</span><strong>'+money(fee)+'</strong></div>';box.innerHTML='<div class="delivery-row"><span>পণ্যের মোট দাম</span><strong>'+money(subtotal)+'</strong></div><div class="delivery-row"><span>ডেলিভারি চার্জ</span><strong>'+(grams&&baseFee?money(fee):'ঠিকানা ও পণ্য নির্বাচন করুন')+'</strong></div><button type="button" class="delivery-details-toggle" style="display:inline-flex;width:auto;min-height:0;padding:4px 8px;margin-top:4px;font-size:12px;line-height:1.2;gap:6px" aria-expanded="'+(deliveryDetailsOpen?'true':'false')+'" aria-controls="delivery-details-panel"><span>ডেলিভারি চার্জের বিস্তারিত</span><span class="delivery-details-chevron" aria-hidden="true">'+(deliveryDetailsOpen?'⌃':'⌄')+'</span></button><div id="delivery-details-panel" class="delivery-details-panel" '+(deliveryDetailsOpen?'':'hidden')+'>'+rows+(!area.district&&grams?'<p class="delivery-detail-hint">ঠিকানা থেকে জেলা/উপজেলা নিশ্চিতভাবে শনাক্ত হয়নি। সঠিক কুরিয়ার চার্জের জন্য ঠিকানায় উপজেলা ও জেলার নাম যোগ করুন।</p>':(!grams?'<p class="delivery-detail-hint">'+rateText+'</p>':''))+'</div><div class="delivery-row delivery-total"><span>মোট পরিশোধযোগ্য মূল্য</span><strong>'+money(total)+'</strong></div><small class="delivery-words">('+banglaNumberWords(Math.floor(total/100))+' টাকা)</small>';const toggle=box.querySelector('.delivery-details-toggle');if(toggle)toggle.onclick=()=>{deliveryDetailsOpen=!deliveryDetailsOpen;renderCheckoutTotals();};}
+function deliveryCharge(district,grams){const d=String(district||'').trim().toLowerCase().replace(/[\s।,().-]/g,'');const kg=grams/1000;if(!district||!grams)return 0;if(d==='ঝিনাইদহ'||d==='jhenaidah')return 6000+Math.max(0,Math.ceil(kg)-1)*2000;if(d==='ঢাকাসিটি'||d==='ঢাকাশহর')return 11500+Math.max(0,Math.ceil(kg)-1)*2000;if(grams<=500)return 11500;if(grams<=1000)return 13500;return 13500+Math.max(0,Math.ceil(kg)-1)*2000;}let deliveryDetailsOpen=false;
+function renderCheckoutTotals(){const box=$('#delivery-summary');if(!box)return;const subtotal=[...cart.values()].reduce((s,x)=>s+x.unit_price_paisa*x.quantity,0),grams=[...cart.values()].reduce((s,x)=>s+Number(x.weight_kg||0)*1000*x.quantity,0),area=selectedCheckoutArea()||resolveCheckoutArea($('#address')?.value||''),hasAddress=String($('#address')?.value||'').trim().length>=5,district=area.district||'',normalized=String(district).trim().toLowerCase().replace(/[\s।,().-]/g,''),baseFee=deliveryCharge(district,grams),payment=document.querySelector('input[name="payment"]:checked')?.value||'cod',codFee=baseFee&&payment==='cod'?Math.ceil(subtotal/100):0,fee=baseFee+codFee,total=subtotal+fee,extraKg=Math.max(0,Math.ceil(grams/1000)-1);let rateText='',weightText=grams?(grams>=1000?(grams/1000).toLocaleString('bn-BD',{maximumFractionDigits:2})+' কেজি':grams.toLocaleString('bn-BD')+' গ্রাম'):'—';if(!district||!grams)rateText='সম্পূর্ণ ঠিকানা ও পণ্য নির্বাচন করলে কুরিয়ার চার্জের হিসাব দেখা যাবে।';else if(normalized==='ঝিনাইদহ'||normalized==='jhenaidah')rateText='প্রথম ১ কেজি '+money(6000)+' + অতিরিক্ত প্রতি কেজি '+money(2000);else if((normalized==='ঢাকাসিটি'||normalized==='ঢাকাশহর'))rateText='প্রথম ১ কেজি '+money(11500)+' + অতিরিক্ত প্রতি কেজি '+money(2000);else if(grams<=500)rateText='৫০০ গ্রাম পর্যন্ত নির্ধারিত চার্জ '+money(11500);else if(grams<=1000)rateText='৫০১ গ্রাম থেকে ১ কেজি পর্যন্ত নির্ধারিত চার্জ '+money(13500);else rateText='প্রথম ১ কেজি '+money(13500)+' + অতিরিক্ত প্রতি কেজি '+money(2000);const rows=(!district||!grams)?'':'<div class="delivery-detail-row"><span>পাঠানোর স্থান:</span><strong>ঝিনাইদহ → '+esc(district)+'</strong></div><div class="delivery-detail-row"><span>ঠিকানা শনাক্ত:</span><strong>'+esc(area.district?(area.upazila||area.district):'নিশ্চিত নয় — সাধারণ রেট')+'</strong></div><div class="delivery-detail-row"><span>পণ্যের ওজন:</span><strong>'+weightText+'</strong></div><div class="delivery-detail-row"><span>কুরিয়ার রেট:</span><strong>'+rateText+'</strong></div>'+(extraKg?'<div class="delivery-detail-row"><span>অতিরিক্ত ওজন:</span><strong>'+extraKg.toLocaleString('bn-BD')+' কেজি × '+money(2000)+' = '+money(extraKg*2000)+'</strong></div>':'')+'<div class="delivery-detail-row"><span>কুরিয়ার চার্জ:</span><strong>'+money(baseFee)+'</strong></div>'+(payment==='cod'?'<div class="delivery-detail-row"><span>COD (১%):</span><strong>'+money(codFee)+'</strong></div>':'<div class="delivery-detail-row"><span>COD:</span><strong>নেই (অগ্রিম পেমেন্ট)</strong></div>')+'<div class="delivery-detail-row delivery-detail-total"><span>মোট ডেলিভারি:</span><strong>'+money(fee)+'</strong></div>';box.innerHTML='<div class="delivery-row"><span>পণ্যের মোট দাম</span><strong>'+money(subtotal)+'</strong></div><div class="delivery-row"><span>ডেলিভারি চার্জ</span><strong>'+(grams&&baseFee?money(fee):'ঠিকানা ও পণ্য নির্বাচন করুন')+'</strong></div><button type="button" class="delivery-details-toggle" style="display:inline-flex;width:auto;min-height:0;padding:4px 8px;margin-top:4px;font-size:12px;line-height:1.2;gap:6px" aria-expanded="'+(deliveryDetailsOpen?'true':'false')+'" aria-controls="delivery-details-panel"><span>ডেলিভারি চার্জের বিস্তারিত</span><span class="delivery-details-chevron" aria-hidden="true">'+(deliveryDetailsOpen?'⌃':'⌄')+'</span></button><div id="delivery-details-panel" class="delivery-details-panel" '+(deliveryDetailsOpen?'':'hidden')+'>'+rows+(!area.district&&grams?'<p class="delivery-detail-hint">ঠিকানা থেকে জেলা/উপজেলা নিশ্চিতভাবে শনাক্ত হয়নি। সঠিক কুরিয়ার চার্জের জন্য ঠিকানায় উপজেলা ও জেলার নাম যোগ করুন।</p>':(!grams?'<p class="delivery-detail-hint">'+rateText+'</p>':''))+'</div><div class="delivery-row delivery-total"><span>মোট পরিশোধযোগ্য মূল্য</span><strong>'+money(total)+'</strong></div><small class="delivery-words">('+banglaNumberWords(Math.floor(total/100))+' টাকা)</small>';const toggle=box.querySelector('.delivery-details-toggle');if(toggle)toggle.onclick=()=>{deliveryDetailsOpen=!deliveryDetailsOpen;renderCheckoutTotals();};}
 function renderCart(){const el=$('#cart-summary'),a=[...cart.values()];if(!a.length){el.textContent='এখনো কোনো পণ্য নির্বাচন করা হয়নি।';return;}const total=a.reduce((s,x)=>s+x.unit_price_paisa*x.quantity,0);el.innerHTML=a.map(x=>'<div class="cart-line" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eee">'+(x.image_url?'<img src="'+esc(x.image_url)+'" alt="'+esc(x.product_name)+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px">':'<div style="width:64px;height:64px;background:#f2f2f2;border-radius:8px"></div>')+'<div style="flex:1;min-width:0"><strong>'+esc(x.product_name)+'</strong><div style="color:#888;font-size:12px">('+esc(x.variant_label)+')</div><div>'+money(x.unit_price_paisa)+' × '+x.quantity+' টি</div><div style="display:flex;align-items:center;gap:7px;margin-top:7px"><button type="button" data-cart-action="minus" data-variant="'+x.variant_id+'" aria-label="পরিমাণ কমান" style="width:30px;height:30px;border:1px solid #ccc;border-radius:6px;background:#fff;font-size:18px">−</button><span style="min-width:22px;text-align:center;font-weight:600">'+x.quantity+'</span><button type="button" data-cart-action="plus" data-variant="'+x.variant_id+'" aria-label="পরিমাণ বাড়ান" style="width:30px;height:30px;border:1px solid #ccc;border-radius:6px;background:#fff;font-size:18px">+</button><button type="button" data-cart-action="remove" data-variant="'+x.variant_id+'" style="margin-left:5px;border:0;background:#fff0f0;color:#c62828;border-radius:6px;padding:6px 9px;font-size:12px">রিমুভ</button></div></div><strong style="white-space:nowrap">'+money(x.unit_price_paisa*x.quantity)+'</strong></div>').join('')+'<div class="cart-grand-total" style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:14px;color:#16803c;font-size:22px;font-weight:800;text-align:right"><span>মোট:</span><div style="display:flex;flex-direction:column;align-items:flex-end"><strong>'+money(total)+'</strong></div></div>';el.querySelectorAll('[data-cart-action]').forEach(b=>b.onclick=()=>{const id=Number(b.dataset.variant),item=cart.get(id);if(!item)return;const action=b.dataset.cartAction;if(action==='remove'){const removed=cart.get(id);cart.delete(id);updateAllProductCards();}else if(action==='minus')item.quantity=Math.max(1,item.quantity-1);else if(action==='plus')item.quantity=Math.min(10,item.quantity+1);renderCart();renderCheckoutTotals();});}
 function locationKey(value){let key=String(value||'').normalize('NFKC').toLocaleLowerCase().replace(/district|upazila|upzilla|thana|zila|জেলা|উপজেলা|থানা/g,' ').replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();const aliases={'chittagong':'chattogram','comilla':'cumilla','bogra':'bogura','jessore':'jashore','barisal':'barishal','cox s bazar':'cox bazar'};return aliases[key]||key;}
 function findBdLocation(address){const districts=bdTree.flatMap(x=>x.districts||[]),districtKeys=['state_district','county','district','city','municipality','state','region','province'],upazilaKeys=['county','municipality','city_district','town','suburb','village','hamlet','neighbourhood','city','locality'];const candidates=keys=>keys.map(k=>address?.[k]).filter(Boolean).map(String);const matches=(candidate,obj)=>{const c=locationKey(candidate);return !!c&&[obj.en_name,obj.bn_name,obj.name,...(obj.aliases||[])].filter(Boolean).map(locationKey).some(n=>n&&(c===n||c.startsWith(n+' ')||c.endsWith(' '+n)));};let upMatch=null;for(const c of candidates(upazilaKeys)){for(const d of districts){const u=(d.upazilas||[]).find(x=>matches(c,x));if(u){upMatch={district:d,upazila:u};break;}}if(upMatch)break;}let district=upMatch?.district||null;if(!district){for(const c of candidates(districtKeys)){district=districts.find(d=>matches(c,d));if(district)break;}}return {district,upazila:upMatch?.upazila||null};}
