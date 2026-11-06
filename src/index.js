@@ -18,8 +18,8 @@ let addressGeoTreePromise;
 async function getAddressGeoTree(){if(!addressGeoTreePromise)addressGeoTreePromise=fetch('https://iqbalhasandev.github.io/bangladesh-geo-json/bangladesh-geo.json',{headers:{'accept':'application/json'}}).then(r=>{if(!r.ok)throw new Error('Geo data unavailable');return r.json();}).catch(e=>{addressGeoTreePromise=null;throw e;});return addressGeoTreePromise;}
 async function resolveAddressArea(address,providedDistrict='',providedUpazila=''){
  const raw=String(address||''),pd=String(providedDistrict||'').trim(),pu=String(providedUpazila||'').trim();
- const explicitDistrict=String(raw.match(/(?:জেলা|district)\\s*[:：-]?\\s*([^,;،]+)/i)?.[1]||'').trim();
- const explicitUpazila=String(raw.match(/(?:উপজেলা|upazila|upzilla|থানা|thana)\\s*[:：-]?\\s*([^,;،]+)/i)?.[1]||'').trim();
+ const explicitDistrict=String(raw.match(/(?:জেলা|district)\s*[:：-]?\s*([^,;،]+)/i)?.[1]||'').trim();
+ const explicitUpazila=String(raw.match(/(?:উপজেলা|upazila|upzilla|থানা|thana)\s*[:：-]?\s*([^,;،]+)/i)?.[1]||'').trim();
  // A customer-selected district/upazila pair takes precedence over ambiguous place-name matches.
  if(pd&&pu){
   if(pd==='ঢাকা (শহর)')return {district:pd,upazila:pu};
@@ -42,7 +42,7 @@ async function resolveAddressArea(address,providedDistrict='',providedUpazila=''
 
 function formatStoredAddress(address,upazila,district){
  const raw=String(address||'').trim(),u=String(upazila||'').trim(),d=String(district||'').trim();
- const clean=raw.replace(/(?:গ্রাম\\/এরিয়া|এরিয়া|এলাকা|গ্রাম)\\s*[:：]?\\s*/g,'').replace(/[,;،]+\\s*(?:উপজেলা|থানা|জেলা|সিটি করপোরেশন)\\s*[:：][^,;،]*/g,'').trim();
+ const clean=raw.replace(/(?:গ্রাম\/এরিয়া|এরিয়া|এলাকা|গ্রাম)\s*[:：]?\s*/g,'').replace(/[,;،]+\s*(?:উপজেলা|থানা|জেলা|সিটি করপোরেশন)\s*[:：][^,;،]*/g,'').trim();
  if(d==='ঢাকা (শহর)'){
   const north=['উত্তরা','উত্তরা পশ্চিম','তুরাগ','দক্ষিণখান','উত্তরখান','খিলক্ষেত','এয়ারপোর্ট','বিমানবন্দর','গুলশান','বনানী','বাড্ডা','ভাটারা','তেজগাঁও','তেজগাঁও শিল্পাঞ্চল','মিরপুর','পল্লবী','রূপনগর','শাহ আলী','কাফরুল','ক্যান্টনমেন্ট','ভাষানটেক','আদাবর','মোহাম্মদপুর','শেরে বাংলা নগর','দারুস সালাম'];
   const corporation=north.some(x=>u.includes(x))?'ঢাকা উত্তর':'ঢাকা দক্ষিণ';
@@ -53,7 +53,7 @@ function formatStoredAddress(address,upazila,district){
 
 function steadfastAddress(address,upazila,district){
  const parts=[],labels={area:'',upazila:'',district:'',corporation:''};
- for(const raw of String(address||'').split(/[;,،]/)){const s=raw.trim();if(!s)continue;const m=s.match(/^(গ্রাম\\/এরিয়া|এরিয়া|এলাকা|উপজেলা\\/থানা|উপজেলা|থানা|জেলা|সিটি করপোরেশন)\\s*[:：]?\\s*(.*)$/);if(m){const k=/^(গ্রাম\\/এরিয়া|এরিয়া|এলাকা)$/.test(m[1])?'area':/^(উপজেলা\\/থানা|উপজেলা|থানা)$/.test(m[1])?'upazila':m[1]==='জেলা'?'district':'corporation';if(m[2]&&!labels[k])labels[k]=m[2].trim();continue;}if(!parts.some(x=>x.toLocaleLowerCase()===s.toLocaleLowerCase()))parts.push(s);}
+ for(const raw of String(address||'').split(/[;,،]/)){const s=raw.trim();if(!s)continue;const m=s.match(/^(গ্রাম\/এরিয়া|এরিয়া|এলাকা|উপজেলা\/থানা|উপজেলা|থানা|জেলা|সিটি করপোরেশন)\s*[:：]?\s*(.*)$/);if(m){const k=/^(গ্রাম\/এরিয়া|এরিয়া|এলাকা)$/.test(m[1])?'area':/^(উপজেলা\/থানা|উপজেলা|থানা)$/.test(m[1])?'upazila':m[1]==='জেলা'?'district':'corporation';if(m[2]&&!labels[k])labels[k]=m[2].trim();continue;}if(!parts.some(x=>x.toLocaleLowerCase()===s.toLocaleLowerCase()))parts.push(s);}
  const area=labels.area||parts.join(', '),u=labels.upazila||String(upazila||'').trim(),d=labels.district||String(district||'').trim();
  if(d==='ঢাকা (শহর)')return ['এরিয়া: '+area,'থানা: '+u,'সিটি করপোরেশন: '+(labels.corporation||'ঢাকা')].filter(x=>!x.endsWith(': ')).join(', ');
  return ['গ্রাম/এরিয়া: '+area,'উপজেলা/থানা: '+u,'জেলা: '+d].filter(x=>!x.endsWith(': ')).join(', ');
