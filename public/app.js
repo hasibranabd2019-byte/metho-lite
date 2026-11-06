@@ -40,10 +40,13 @@ const CHECKOUT_SPELLING_ALIASES={
  'ঢাকা':['dhaka']
 };
 function checkoutAreaHasName(text,name){return checkoutAreaHas(text,name)||(CHECKOUT_SPELLING_ALIASES[name]||[]).some(alias=>checkoutAreaHas(text,alias));}
-function checkoutSuggestionMatches(query,name){
- const q=normalizeCheckoutArea(query).replace(/\s+/g,''),names=[name,...(CHECKOUT_SPELLING_ALIASES[name]||[])];
+const CHECKOUT_ENGLISH_DISTRICT_ALIASES={
+ 'বাগেরহাট':['Bagerhat'],'বান্দরবান':['Bandarban'],'বরগুনা':['Barguna'],'বরিশাল':['Barishal','Barisal'],'ভোলা':['Bhola'],'বগুড়া':['Bogura','Bogra'],'ব্রাহ্মণবাড়িয়া':['Brahmanbaria'],'চাঁদপুর':['Chandpur'],'চট্টগ্রাম':['Chattogram','Chittagong'],'চুয়াডাঙ্গা':['Chuadanga'],'কক্সবাজার':['Coxs Bazar',"Cox's Bazar",'Cox Bazar'],'কুমিল্লা':['Cumilla','Comilla'],'ঢাকা':['Dhaka'],'দিনাজপুর':['Dinajpur'],'ফরিদপুর':['Faridpur'],'ফেনী':['Feni'],'গাইবান্ধা':['Gaibandha'],'গাজীপুর':['Gazipur'],'গোপালগঞ্জ':['Gopalganj'],'হবিগঞ্জ':['Habiganj'],'জামালপুর':['Jamalpur'],'যশোর':['Jashore','Jessore'],'ঝালকাঠি':['Jhalokati','Jhalakathi'],'ঝিনাইদহ':['Jhenaidah','Jhenidah'],'জয়পুরহাট':['Joypurhat'],'খাগড়াছড়ি':['Khagrachhari','Khagrachari'],'খুলনা':['Khulna'],'কিশোরগঞ্জ':['Kishoreganj'],'কুড়িগ্রাম':['Kurigram'],'কুষ্টিয়া':['Kushtia'],'লক্ষ্মীপুর':['Lakshmipur'],'লালমনিরহাট':['Lalmonirhat'],'মাদারীপুর':['Madaripur'],'মাগুরা':['Magura'],'মানিকগঞ্জ':['Manikganj'],'মেহেরপুর':['Meherpur'],'মৌলভীবাজার':['Moulvibazar'],'মুন্সীগঞ্জ':['Munshiganj'],'ময়মনসিংহ':['Mymensingh'],'নওগাঁ':['Naogaon'],'নড়াইল':['Narail'],'নারায়ণগঞ্জ':['Narayanganj'],'নরসিংদী':['Narsingdi'],'নাটোর':['Natore'],'নেত্রকোণা':['Netrokona'],'নীলফামারী':['Nilphamari'],'নোয়াখালী':['Noakhali'],'পাবনা':['Pabna'],'পঞ্চগড়':['Panchagarh'],'পটুয়াখালী':['Patuakhali'],'পিরোজপুর':['Pirojpur'],'রাজবাড়ী':['Rajbari'],'রাজশাহী':['Rajshahi'],'রাঙ্গামাটি':['Rangamati'],'রংপুর':['Rangpur'],'সাতক্ষীরা':['Satkhira'],'শরীয়তপুর':['Shariatpur'],'শেরপুর':['Sherpur'],'সিরাজগঞ্জ':['Sirajganj'],'সুনামগঞ্জ':['Sunamganj'],'সিলেট':['Sylhet'],'টাঙ্গাইল':['Tangail'],'ঠাকুরগাঁও':['Thakurgaon']
+};
+function checkoutSuggestionMatches(query,name,extraNames=[]){
+ const q=normalizeCheckoutArea(query).replace(/\s+/g,''),names=[name,...(CHECKOUT_SPELLING_ALIASES[name]||[]),...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[]),...extraNames];
  if(q.length<2)return false;
- return names.some(value=>{const n=normalizeCheckoutArea(value).replace(/\s+/g,'');return n.startsWith(q)||n.includes(q)||(q.length>=6&&checkoutAreaDistance(q,n)<=1);});
+ return names.filter(Boolean).some(value=>{const n=normalizeCheckoutArea(value).replace(/\s+/g,'');return n.startsWith(q)||n.includes(q)||(q.length>=6&&checkoutAreaDistance(q,n)<=1);});
 }
 
 const CHECKOUT_DHAKA_THANAS=['মিরপুর','পল্লবী','রূপনগর','শাহ আলী','দারুস সালাম','কাফরুল','ভাষানটেক','ক্যান্টনমেন্ট','বাড্ডা','ভাটারা','গুলশান','বনানী','তেজগাঁও','শেরে বাংলা নগর','মোহাম্মদপুর','আদাবর','ধানমন্ডি','কলাবাগান','রমনা','শাহবাগ','পল্টন','মতিঝিল','শাহজাহানপুর','খিলগাঁও','রামপুরা','মুগদা','সবুজবাগ','যাত্রাবাড়ী','কদমতলী','ডেমরা','শ্যামপুর','সূত্রাপুর','ওয়ারী','গেন্ডারিয়া','বংশাল','লালবাগ','চকবাজার','হাজারীবাগ','কামরাঙ্গীরচর','নিউ মার্কেট','উত্তরা','দক্ষিণখান','উত্তরখান','খিলক্ষেত','তুরাগ','এয়ারপোর্ট'];
@@ -82,8 +85,8 @@ function renderAddressSuggestions(){
  if(!box)return;
  if(!raw){box.hidden=true;box.innerHTML='';checkoutSuggestionItems=[];return;}
  const parts=raw.split(/[,;،]/).map(x=>x.trim()).filter(Boolean),lastWords=(parts.at(-1)||'').split(/\s+/).filter(Boolean),queries=[...parts.slice(-2).reverse(),lastWords.slice(-3).join(' '),lastWords.slice(-2).join(' ')].filter(Boolean),districts=bdTree.flatMap(x=>x.districts||[]),items=[];
- const add=(district,upazila,name)=>{const canonical=name||upazila||district;if(!queries.some(q=>checkoutSuggestionMatches(q,canonical)))return;const key=district+'|'+upazila;if(items.some(x=>x.key===key))return;items.push({key,district,upazila,label:upazila?upazila+', '+district:district});};
- for(const d of districts){add(d.bn_name,'',d.bn_name);for(const u of d.upazilas||[])add(d.bn_name,u.bn_name,u.bn_name);}
+ const add=(district,upazila,name,englishNames=[])=>{const canonical=name||upazila||district;if(!queries.some(q=>checkoutSuggestionMatches(q,canonical,englishNames)))return;const key=district+'|'+upazila;if(items.some(x=>x.key===key))return;items.push({key,district,upazila,label:upazila?upazila+', '+district:district});};
+ for(const d of districts){add(d.bn_name,'',d.bn_name,[d.en_name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);for(const u of d.upazilas||[])add(d.bn_name,u.bn_name,u.bn_name,[u.en_name]);}
  // Keep suggestions useful even when the external geography file is unavailable.
  for(const district of CHECKOUT_DISTRICTS)add(district,'',district);
  for(const thana of CHECKOUT_DHAKA_THANAS)add('ঢাকা (শহর)',thana,thana);
