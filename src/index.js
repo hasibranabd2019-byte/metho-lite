@@ -117,9 +117,9 @@ const telegramMessage='🛍️ <b>মেঠোতে নতুন অর্ড�
 try{await sendOrderTelegram(env,telegramMessage);}catch(e){console.error('[METHO_TELEGRAM_ORDER_ERROR]',String(e?.message||e));}return json({ok:true,order_code:orderCode,subtotal_paisa:total,delivery_fee_paisa:deliveryFee,total_paisa:payableTotal,billable_weight_grams:billableGrams,cooldown_seconds:60});}
  if(p==='/api/customer-previous-order'&&m==='POST'){
   const d=await readBody(req),digits=s=>String(s||'').replace(/[০-৯]/g,x=>String('০১২৩৪৫৬৭৮৯'.indexOf(x))),code=digits(d?.order_code).trim().toUpperCase();
-  let phone=digits(d?.phone).replace(/[\\s()-]/g,'');
+  let phone=digits(d?.phone).replace(/[\s()-]/g,'');
   if(phone.startsWith('+880'))phone='0'+phone.slice(4);else if(phone.startsWith('880'))phone='0'+phone.slice(3);
-  if(!/^ML[0-9]{6}-[0-9]{5}$/.test(code)||!/^01[3-9]\\d{8}$/.test(phone))return error('ফোন নম্বর ও আগের অর্ডার নম্বর সঠিকভাবে দিন।');
+  if(!/^ML[0-9]{6}-[0-9]{5}$/.test(code)||!/^01[3-9]\d{8}$/.test(phone))return error('ফোন নম্বর ও আগের অর্ডার নম্বর সঠিকভাবে দিন।');
   const ip=String(req.headers.get('CF-Connecting-IP')||'unknown').slice(0,80),now=Math.floor(Date.now()/1000),windowStart=now-600;
   const ipKey=await sha('customer-lookup-ip:'+ip),phoneKey=await sha('customer-lookup-phone:'+phone);
   const upsert=key=>env.DB.prepare('INSERT INTO customer_lookup_limits(key,window_started_at,attempts) VALUES(?,?,1) ON CONFLICT(key) DO UPDATE SET attempts=CASE WHEN customer_lookup_limits.window_started_at<=? THEN 1 ELSE customer_lookup_limits.attempts+1 END,window_started_at=CASE WHEN customer_lookup_limits.window_started_at<=? THEN excluded.window_started_at ELSE customer_lookup_limits.window_started_at END').bind(key,now,windowStart,windowStart);
