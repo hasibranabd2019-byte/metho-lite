@@ -235,3 +235,15 @@ body:not(.cart-toast-open)> :not(#cart-toast){transition:filter .22s ease;}
 @media(prefers-reduced-motion:reduce){.order-confirmation-card{animation:none}}
 
 .delivery-zone-choice{margin-top:-5px;padding:11px 12px;border:1px solid #e2d7b5;border-radius:10px;background:#fffdf5;color:#4b493d;font-size:12px}.delivery-zone-choice[hidden]{display:none}.delivery-zone-choice p{margin:0 0 8px;font-weight:700;line-height:1.5}.delivery-zone-choice label{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer}.delivery-zone-choice input{accent-color:#238044;width:16px;height:16px;margin:0}
+
+/* Three compact, side-by-side delivery-zone choice cards */
+.delivery-zone-choice{margin-top:-5px;padding:12px;border:1px solid #e2e9de;border-radius:12px;background:#fbfdf9;color:#354b38}
+.delivery-zone-choice>p{margin:0 0 10px;font-size:12px;font-weight:700;line-height:1.55;text-align:left}
+.delivery-zone-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.delivery-zone-option{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:78px;padding:9px 5px;border:1px solid #dce5d8;border-radius:10px;background:#fff;color:#4b5c4b;text-align:center;font-size:11px;font-weight:600;line-height:1.4;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s}
+.delivery-zone-option input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.delivery-zone-radio{display:grid;place-items:center;width:19px;height:19px;flex:0 0 19px;border:1.7px solid #aab8a7;border-radius:50%;background:#fff;transition:border-color .15s,background .15s}
+.delivery-zone-option input:checked+.delivery-zone-radio{border:5px solid #218344;background:#fff}
+.delivery-zone-option:has(input:checked){border-color:#70a77b;background:#edf6eb;color:#195b2e;box-shadow:0 0 0 1px rgba(33,131,68,.08)}
+.delivery-zone-option:focus-within{outline:2px solid #8dbb93;outline-offset:2px}
+@media(max-width:360px){.delivery-zone-choice{padding:9px}.delivery-zone-options{gap:5px}.delivery-zone-option{min-height:72px;padding:7px 3px;font-size:10px}}

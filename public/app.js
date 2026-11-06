@@ -615,10 +615,13 @@ function renderAddressSuggestions(){
  add('খুলনা','','বয়রা বাজার',['boyra bazar','boyra bazaar','boira bazar','boyra bazar khulna'],'বয়রা বাজার');
  add('চুয়াডাঙ্গা','জীবননগর','জীবননগর');
  add('ঝিনাইদহ','মহেশপুর','মহেশপুর');
- const explicitDistricts=[...new Set([...districts.map(d=>d.bn_name),...CHECKOUT_DISTRICTS].filter(name=>matchesAny([name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[])])))];
- // If a name is both a district and another district's upazila (e.g.
- // Sherpur), retain both plausible choices instead of hiding the upazila.
- let relevantItems=explicitDistricts.length?items.filter(x=>(explicitDistricts.includes(x.district)&&(!x.upazila||x.locationMatched))||(x.upazila&&x.locationMatched)):items;
+ const knownDistricts=[...new Set([...districts.map(d=>d.bn_name),...CHECKOUT_DISTRICTS])];
+ const exactDistrict=knownDistricts.find(name=>[name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[])].some(alias=>normalizeCheckoutRoman(raw)===normalizeCheckoutRoman(alias)));
+ const explicitDistricts=[...new Set(knownDistricts.filter(name=>matchesAny([name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[])])))];
+ // A bare district name is an exact district lookup, not a request for
+ // every market/locality whose parent district happens to have that name.
+ let relevantItems=exactDistrict?[{key:exactDistrict+'||district',district:exactDistrict,upazila:'',label:exactDistrict,localityName:'',districtMatched:true,locationMatched:true,locationAliases:[exactDistrict,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[exactDistrict]||[])],matchedQueries:[raw],locationScore:100,matchScore:1000}]:
+  (explicitDistricts.length?items.filter(x=>(explicitDistricts.includes(x.district)&&(!x.upazila||x.locationMatched))||(x.upazila&&x.locationMatched)):items);
  const bestLocationScore=Math.max(0,...relevantItems.map(x=>x.locationScore||0));
  if(bestLocationScore>=90)relevantItems=relevantItems.filter(x=>(x.locationScore||0)>=90);
  else if(bestLocationScore>=75)relevantItems=relevantItems.filter(x=>(x.locationScore||0)>=75);
