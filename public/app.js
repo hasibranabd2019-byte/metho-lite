@@ -25,6 +25,7 @@ function checkoutAreaHas(text,alias){const t=' '+normalizeCheckoutRoman(text)+' 
 const CHECKOUT_SPELLING_ALIASES={
  'জীবননগর':['জীবন নগর','জিবন নগর','জিবননগর','jibon nogor','zibon nagar','jibon nagar','jibonnogor','jibannagar','zibonnagar','zibonnogor'],
  'মিরপুর':['mirpur','mir poor','meerpur','mirpur dhaka'],
+ 'মিরপুর ডিওএইচএস':['mirpur dohs','dohs mirpur','mirpur defence officers housing society'],
  'পল্লবী':['pallabi','pallaby'],
  'রূপনগর':['rupnagar','rup nagar'],
  'শাহ আলী':['shah ali','shahali'],
@@ -73,7 +74,38 @@ function checkoutSuggestionMatchScore(query,name,extraNames=[]){
 function checkoutSuggestionMatches(query,name,extraNames=[]){return checkoutSuggestionMatchScore(query,name,extraNames)>0;}
 
 const CHECKOUT_DHAKA_THANAS=['মিরপুর','পল্লবী','রূপনগর','শাহ আলী','দারুস সালাম','কাফরুল','ভাষানটেক','ক্যান্টনমেন্ট','বাড্ডা','ভাটারা','গুলশান','বনানী','তেজগাঁও','শেরে বাংলা নগর','মোহাম্মদপুর','আদাবর','ধানমন্ডি','কলাবাগান','রমনা','শাহবাগ','পল্টন','মতিঝিল','শাহজাহানপুর','খিলগাঁও','রামপুরা','মুগদা','সবুজবাগ','যাত্রাবাড়ী','কদমতলী','ডেমরা','শ্যামপুর','সূত্রাপুর','ওয়ারী','গেন্ডারিয়া','বংশাল','লালবাগ','চকবাজার','হাজারীবাগ','কামরাঙ্গীরচর','নিউ মার্কেট','উত্তরা','দক্ষিণখান','উত্তরখান','খিলক্ষেত','তুরাগ','এয়ারপোর্ট','হাতিরঝিল'];
-const CHECKOUT_DHAKA_LOCALITIES=[
+const CHECKOUT_EXPANDED_LOCALITIES=[
+ ['পল্লবী','মিরপুর ডিওএইচএস',['mirpur dohs','dohs mirpur','mirpur defence officers housing society']],
+ ['গুলশান','বারিধারা ডিপ্লোমেটিক জোন',['baridhara diplomatic zone']],
+ ['বনানী','বনানী ডিওএইচএস',['banani dohs']],
+ ['ক্যান্টনমেন্ট','মহাখালী ডিওএইচএস',['mohakhali dohs']],
+ ['মিরপুর মডেল','মিরপুর ৩',['mirpur 3']],['মিরপুর মডেল','মিরপুর ৪',['mirpur 4']],['মিরপুর মডেল','মিরপুর ৫',['mirpur 5']],['মিরপুর মডেল','মিরপুর ৭',['mirpur 7']],['মিরপুর মডেল','মিরপুর ৮',['mirpur 8']],['মিরপুর মডেল','মিরপুর ৯',['mirpur 9']],
+ ['পল্লবী','মিরপুর ১৩',['mirpur 13']],['শাহ আলী','মিরপুর ১৫',['mirpur 15']],['শাহ আলী','মিরপুর ১৬',['mirpur 16']],
+ ['পল্লবী','ইস্টার্ন হাউজিং',['eastern housing']],['পল্লবী','আলুব্দী',['alubdi']],
+ ['রূপনগর','দুয়ারীপাড়া',['duaripara','duari para']],['রূপনগর','রূপনগর আবাসিক এলাকা',['rupnagar residential area']],
+ ['কাফরুল','মনিপুর',['monipur']],['কাফরুল','বাউনিয়াবাদ',['bauniabad']],['কাফরুল','পূরবী',['purabi']],
+ ['শাহ আলী','শাহ আলীবাগ',['shah alibagh','shah ali bag']],['দারুস সালাম','মিরপুর বাংলা কলেজ',['mirpur bangla college']],
+ ['শেরে বাংলা নগর','জাতীয় সংসদ ভবন এলাকা',['jatiya sangsad bhaban','national parliament']],['শেরে বাংলা নগর','চন্দ্রিমা উদ্যান',['chandrima uddan']],
+ ['তেজগাঁও','সাতরাস্তা',['satrasta','saat rasta']],['তেজগাঁও','নাবিস্কো',['nabisco']],['তেজগাঁও','বিজয় সরণি',['bijoy sarani','bijoy soroni']],
+ ['গুলশান','কালাচাঁদপুর',['kalachandpur','kala chandpur']],['গুলশান','নর্দ্দা',['nadda','norda']],['গুলশান','জগন্নাথপুর',['jagannathpur']],
+ ['বাড্ডা','প্রগতি সরণি',['pragati sarani','progoti shoroni']],['বাড্ডা','উলন',['ulon']],['বাড্ডা','হাজীপাড়া',['hazipara','hajipara']],
+ ['ভাটারা','ছোলমাইদ',['cholmaida','cholmaid']],['ভাটারা','নয়ানগর',['noyanagar','nayanagar']],
+ ['রামপুরা','পূর্ব রামপুরা',['east rampura']],['রামপুরা','হাজীপাড়া',['hazipara','hajipara']],
+ ['মোহাম্মদপুর','বাবর রোড',['babar road']],['মোহাম্মদপুর','শেখেরটেক',['shekhertek','shekher tek']],['মোহাম্মদপুর','চাঁদ উদ্যান',['chand uddan']],
+ ['আদাবর','মোহাম্মদী হাউজিং',['mohammadi housing']],
+ ['উত্তরা মডেল','উত্তরা সেক্টর ২',['uttara sector 2','uttara 2']],['উত্তরা মডেল','উত্তরা সেক্টর ৩',['uttara sector 3','uttara 3']],['উত্তরা মডেল','উত্তরা সেক্টর ৫',['uttara sector 5','uttara 5']],['উত্তরা মডেল','উত্তরা সেক্টর ৬',['uttara sector 6','uttara 6']],['উত্তরা মডেল','উত্তরা সেক্টর ৮',['uttara sector 8','uttara 8']],['উত্তরা মডেল','উত্তরা সেক্টর ৯',['uttara sector 9','uttara 9']],['উত্তরা মডেল','উত্তরা সেক্টর ১৯',['uttara sector 19','uttara 19']],['উত্তরা মডেল','উত্তরা সেক্টর ২০',['uttara sector 20','uttara 20']],
+ ['উত্তরা মডেল','রাজলক্ষ্মী',['rajslakkhi','raja lakshmi']],['উত্তরা মডেল','হাউজ বিল্ডিং',['house building']],['উত্তরা মডেল','মাইলস্টোন কলেজ এলাকা',['milestone college']],
+ ['দক্ষিণখান','আশকোনা হজ ক্যাম্প',['ashkona hajj camp']],['দক্ষিণখান','গাওয়াইর',['gawair']],['দক্ষিণখান','ফায়দাবাদ',['faydabad','faidabad']],
+ ['উত্তরখান','মৈনারটেক',['moinartek','moinar tek']],['খিলক্ষেত','লে মেরিডিয়ান এলাকা',['le meridien']],
+ ['ক্যান্টনমেন্ট','জিয়া কলোনি',['zia colony']],['ক্যান্টনমেন্ট','মাটিকাটা ইসিবি',['matikata ecb']],
+ ['খিলগাঁও','দক্ষিণ বনশ্রী',['south bansree','dakshin bansree']],['সবুজবাগ','কদমতলা',['kadamtala']],['সবুজবাগ','মাদারটেক',['madartek']],['সবুজবাগ','দাসেরকান্দি',['daser kandi']],
+ ['যাত্রাবাড়ী','ধলপুর',['dhalpur']],['যাত্রাবাড়ী','কাজলা',['kajla']],['যাত্রাবাড়ী','দনিয়া',['donia']],
+ ['কদমতলী','মুরাদপুর',['muradpur']],['ডেমরা','কোনাপাড়া',['konapara','kona para']],['ডেমরা','আমুলিয়া মডেল টাউন',['amulia model town']],
+ ['শ্যামপুর','ধোলাইপাড়',['dholaipar','dholai para']],['সূত্রাপুর','ফরাশগঞ্জ',['farashganj']],
+ ['লালবাগ','বকশীবাজার',['bakshibazar']],['চকবাজার','ইমামগঞ্জ',['imamganj']],['চকবাজার','মৌলভীবাজার',['moulvibazar']],
+ ['বংশাল','ইংলিশ রোড',['english road']],['মতিঝিল','কমলাপুর',['kamalapur']],['শাহবাগ','কাটাবন',['katabon']]
+];
+const CHECKOUT_DHAKA_LOCALITIES=[...CHECKOUT_EXPANDED_LOCALITIES,
  ['ওয়ারী','টিকাটুলি',['tikatuli','tikatuly','tikatuIi']],
  ['ওয়ারী','ওয়ারী',['wari','wary']],
  ['ওয়ারী','র‍্যাঙ্কিন স্ট্রিট',['rankin street','rankin st']],
