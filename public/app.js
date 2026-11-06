@@ -155,7 +155,7 @@ function renderAddressSuggestions(){
   if(!districtMatched&&!locationMatched)return;
   const key=district+'|'+upazila;
   if(items.some(x=>x.key===key))return;
-  items.push({key,district,upazila,label:upazila?upazila+', '+district:district,matchScore:locationMatched?2:1});
+  items.push({key,district,upazila,label:upazila?upazila+', '+district:district,districtMatched,locationMatched,matchScore:(locationMatched?4:0)+(districtMatched?2:0)});
  };
  for(const d of districts){
   add(d.bn_name,'',d.bn_name,[d.en_name,d.name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);
@@ -169,7 +169,7 @@ function renderAddressSuggestions(){
  const explicitDistricts=[...new Set([...districts.map(d=>d.bn_name),...CHECKOUT_DISTRICTS].filter(name=>matchesAny([name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[name]||[])])))];
  // If a name is both a district and another district's upazila (e.g.
  // Sherpur), retain both plausible choices instead of hiding the upazila.
- const relevantItems=explicitDistricts.length?items.filter(x=>explicitDistricts.includes(x.district)||(explicitDistricts.includes('ঢাকা')&&x.district==='ঢাকা (শহর)')||(x.upazila&&matchesAny([x.upazila,...(CHECKOUT_SPELLING_ALIASES[x.upazila]||[])]))):items;
+ const relevantItems=explicitDistricts.length?items.filter(x=>(explicitDistricts.includes(x.district)&&(!x.upazila||x.locationMatched))||(x.upazila&&x.locationMatched)):items;
  relevantItems.sort((a,b)=>b.matchScore-a.matchScore);
  checkoutSuggestionItems=relevantItems.slice(0,7);
  box.innerHTML=checkoutSuggestionItems.map((x,i)=>'<button type="button" class="address-suggestion" role="option" aria-selected="false" data-address-suggestion="'+i+'"><span class="address-suggestion-name">'+esc(x.label)+'</span><small>'+(x.upazila?(x.district==='ঢাকা (শহর)'?'থানা':'উপজেলা'):'জেলা')+'</small></button>').join('');
