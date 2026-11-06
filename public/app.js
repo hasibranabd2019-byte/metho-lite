@@ -35,6 +35,7 @@ const CHECKOUT_SPELLING_ALIASES={
  'মোহাম্মদপুর':['mohammadpur','mohammedpur'],
  'উত্তরা':['uttara'],
  'নিউ মার্কেট':['new market','newmarket'],
+ 'মহেশপুর':['maheshpur','moheshpur','mohesphur','mohespoor','mohespor','mohespur','mahespur','mahespoor'],
  'ঝিনাইদহ':['jhenaidah','jhenidah'],
  'চুয়াডাঙ্গা':['chuadanga','chuadanga'],
  'ঢাকা':['dhaka']
@@ -111,10 +112,14 @@ function renderAddressSuggestions(){
  // Search every word and adjacent word-group in the complete address, not only
  // the final comma-separated part. This supports locality-first entries such as
  // "wireless chandpur" and "wireless, chandpur sadar".
- const words=raw.match(/[\p{L}\p{N}]+/gu)||[],queries=[];
+ const words=raw.match(/[\p{L}\p{N}]+/gu)||[],queries=[],genericAddressWords=new Set(['bazar','bazaar','bajaar','বাজার']);
  for(let size=Math.min(4,words.length);size>=1;size--){
   for(let i=0;i<=words.length-size;i++){
-   const query=words.slice(i,i+size).join(' ');
+   const group=words.slice(i,i+size);
+   // Generic locality suffixes such as "bazar" must not independently
+   // trigger unrelated place names; retain meaningful locality tokens.
+   if(group.length===1&&genericAddressWords.has(normalizeCheckoutArea(group[0])))continue;
+   const query=group.join(' ');
    if(normalizeCheckoutArea(query).replace(/\s/g,'').length>=2)queries.push(query);
   }
  }
