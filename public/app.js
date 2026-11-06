@@ -51,8 +51,15 @@ function checkoutSuggestionMatches(query,name,extraNames=[]){
  return names.filter(Boolean).some(value=>{
   const n=compact(value);
   if(n.startsWith(q)||n.includes(q))return true;
-  const limit=q.length>=10?2:q.length>=5?1:0;
-  return limit>0&&Math.abs(q.length-n.length)<=limit&&checkoutAreaDistance(q,n)<=limit;
+  // Be forgiving while the customer is still typing a place name. Compare
+  // against candidate prefixes so omitted final letters do not block a match.
+  // Two edits are allowed only for longer queries to keep short queries precise.
+  const limit=q.length>=8?2:q.length>=5?1:0;
+  if(!limit)return false;
+  for(let length=Math.max(2,q.length-limit);length<=Math.min(n.length,q.length+limit);length++){
+   if(checkoutAreaDistance(q,n.slice(0,length))<=limit)return true;
+  }
+  return false;
  });
 }
 
