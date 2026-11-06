@@ -93,11 +93,11 @@ function renderAddressSuggestions(){
  // Search every word and adjacent word-group in the complete address, not only
  // the final comma-separated part. This supports locality-first entries such as
  // "wireless chandpur" and "wireless, chandpur sadar".
- const words=raw.match(/[\\p{L}\\p{N}]+/gu)||[],queries=[];
+ const words=raw.match(/[\p{L}\p{N}]+/gu)||[],queries=[];
  for(let size=Math.min(4,words.length);size>=1;size--){
   for(let i=0;i<=words.length-size;i++){
    const query=words.slice(i,i+size).join(' ');
-   if(normalizeCheckoutArea(query).replace(/\\s/g,'').length>=2)queries.push(query);
+   if(normalizeCheckoutArea(query).replace(/\s/g,'').length>=2)queries.push(query);
   }
  }
  const districts=bdTree.flatMap(x=>x.districts||[]),items=[];
