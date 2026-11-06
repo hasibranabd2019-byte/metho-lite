@@ -42,9 +42,9 @@ function resolveCheckoutArea(address){
   if(namedDistricts.length){
    const d=namedDistricts[0],u=(d.upazilas||[]).find(x=>checkoutAreaHasName(full,x.bn_name)||checkoutAreaHas(full,x.en_name));
    if(d.bn_name==='ঢাকা'&&(/মিরপুর|উত্তরা|পল্লবী|গুলশান|ধানমন্ডি|বাড্ডা|মোহাম্মদপুর|নীলক্ষেত|এয়ারপোর্ট|বিমানবন্দর|ঢাকা শহর|dhaka city/i.test(full)))return {district:'ঢাকা (শহর)',upazila:explicitUpazila||CHECKOUT_DHAKA_THANAS.find(x=>checkoutAreaHas(full,x))||'ঢাকা শহর'};
-   return {district:d.bn_name,upazila:explicitUpazila||(u?.bn_name||'')};
+   return {district:d.bn_name,upazila:u?.bn_name||explicitUpazila||''};
   }
-  const matches=[];for(const d of districts)for(const u of d.upazilas||[])if(checkoutAreaHas(full,u.bn_name)||checkoutAreaHas(full,u.en_name))matches.push({district:d.bn_name,upazila:u.bn_name});
+  const matches=[];for(const d of districts)for(const u of d.upazilas||[])if(checkoutAreaHasName(full,u.bn_name)||checkoutAreaHas(full,u.en_name))matches.push({district:d.bn_name,upazila:u.bn_name});
   const unique=[...new Map(matches.map(x=>[x.district+'|'+x.upazila,x])).values()];
   if(unique.length===1)return unique[0];
   if(unique.length>1)return {district:'',upazila:''};
