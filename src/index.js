@@ -20,7 +20,7 @@ function areaHas(text,alias){
   if(parts.every((p,j)=>{const w=words[i+j],limit=p.length>=9?2:p.length>=5?1:0;return w===p||areaDistance(w,p)<=limit;}))return true;
  }
  // Also compare adjacent words as one place name (e.g. "zamal pur" / "jamalpur").
- const key=value=>normalizeAreaText(value).replace(/\s+/g,'').replace(/z/g,'j'),target=key(alias);
+ const key=value=>normalizeAreaText(value).replace(/\s+/g,'').replace(/[qkc]/g,'k').replace(/[iy]/g,'i').replace(/[ou]/g,'a').replace(/[zgj]/g,'j').replace(/[wb]/g,'b'),target=key(alias);
  for(let start=0;start<words.length;start++)for(let count=1;count<=3&&start+count<=words.length;count++){
   const candidate=key(words.slice(start,start+count).join(' ')),limit=target.length>=10?2:target.length>=5?1:0;
   if(candidate===target||limit>0&&Math.abs(candidate.length-target.length)<=limit&&areaDistance(candidate,target)<=limit)return true;
