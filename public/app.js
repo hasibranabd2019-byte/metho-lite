@@ -64,7 +64,7 @@ function checkoutSuggestionMatchScore(query,name,extraNames=[]){
   }
   for(const word of nWords){
    if(word===q){best=Math.max(best,100);continue;}
-   if(q.length>=3&&word.startsWith(q)){best=Math.max(best,78);continue;}
+   if(q.length>=2&&word.startsWith(q)){best=Math.max(best,78);continue;}
    if(q.length>=5){const limit=q.length>=8&&word.length>=8?2:1;if(Math.abs(q.length-word.length)<=limit&&checkoutAreaDistance(q,word)<=limit)best=Math.max(best,64);}
   }
  }
