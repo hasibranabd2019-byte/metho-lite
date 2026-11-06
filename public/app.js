@@ -105,7 +105,7 @@ function selectedCheckoutArea(){const district=$('#district')?.value||'',upazila
 function updateAddressResolution(){const box=$('#address-resolution');if(!box)return;const raw=String($('#address')?.value||'').trim(),manual=selectedCheckoutArea(),area=manual||resolveCheckoutArea(raw);if(!raw&&!manual){box.textContent='';return;}if(area.district&&area.upazila){const city=area.district==='ঢাকা (শহর)';box.textContent=(city?'থানা: ':'উপজেলা: ')+area.upazila+' · জেলা: '+area.district;}else if(area.district){box.textContent='জেলা: '+area.district+' · উপজেলা/থানা নিশ্চিত নয়';}else{box.textContent='এলাকা শনাক্ত করা যাচ্ছে না — ঠিকানা আরও স্পষ্ট করে লিখুন।';}}
 let checkoutSuggestionItems=[],checkoutSelectedAreaSuffix='',addressSuggestionTimer=null;
 function removeSelectedAreaFragments(address,selected){
- const aliases=[selected.upazila,selected.district,...(CHECKOUT_SPELLING_ALIASES[selected.upazila]||[]),...(CHECKOUT_SPELLING_ALIASES[selected.district]||[]),...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[selected.district]||[])].filter(Boolean);
+ const aliases=[selected.upazila,selected.district,...(selected.locationAliases||[]),...(CHECKOUT_SPELLING_ALIASES[selected.upazila]||[]),...(CHECKOUT_SPELLING_ALIASES[selected.district]||[]),...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[selected.district]||[])].filter(Boolean);
  const compact=value=>normalizeCheckoutArea(value).replace(/\s+/g,'').replace(/[qkc]/g,'k').replace(/[iy]/g,'i').replace(/[ou]/g,'a').replace(/[zgj]/g,'j').replace(/[wb]/g,'b');
  const targets=aliases.flatMap(value=>normalizeCheckoutArea(value).split(' ')).filter(word=>word.length>=4).map(compact);
  const tokens=[...String(address||'').matchAll(/[\p{L}\p{N}]+/gu)];
@@ -155,7 +155,7 @@ function renderAddressSuggestions(){
   if(!districtMatched&&!locationMatched)return;
   const key=district+'|'+upazila;
   if(items.some(x=>x.key===key))return;
-  items.push({key,district,upazila,label:upazila?upazila+', '+district:district,districtMatched,locationMatched,matchScore:(locationMatched?4:0)+(districtMatched?2:0)});
+  items.push({key,district,upazila,label:upazila?upazila+', '+district:district,districtMatched,locationMatched,locationAliases:locationNames,matchScore:(locationMatched?4:0)+(districtMatched?2:0)});
  };
  for(const d of districts){
   add(d.bn_name,'',d.bn_name,[d.en_name,d.name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);
