@@ -26,6 +26,7 @@ async function resolveAddressArea(address,providedDistrict='',providedUpazila=''
   try{const tree=await getAddressGeoTree(),districts=tree.flatMap(x=>x.districts||[]),d=districts.find(x=>x.bn_name===pd||x.en_name===pd),u=d?.upazilas?.find(x=>x.bn_name===pu||x.en_name===pu);if(d&&u)return {district:d.bn_name,upazila:u.bn_name};}catch(e){console.error('[METHO_ADDRESS_GEO_LOOKUP_FAILED]',String(e));}
  }
  const text=raw+' '+pd+' '+pu+' '+explicitDistrict+' '+explicitUpazila;
+ if(areaHas(text,'নীলক্ষেত')&&areaHas(text,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (শহর)',upazila:'নিউ মার্কেট'};
  const thana=dhakaThanaAliases.find(x=>areaHas(text,x));if(thana)return {district:'ঢাকা (শহর)',upazila:explicitUpazila||thana};
  if(areaHas(text,'ঢাকা শহর')||areaHas(text,'dhaka city'))return {district:'ঢাকা (শহর)',upazila:explicitUpazila||'ঢাকা শহর'};
  try{
@@ -42,7 +43,7 @@ async function resolveAddressArea(address,providedDistrict='',providedUpazila=''
 
 function formatStoredAddress(address,upazila,district){
  const raw=String(address||'').trim(),u=String(upazila||'').trim(),d=String(district||'').trim();
- const clean=raw.replace(/(?:গ্রাম\/এরিয়া|এরিয়া|এলাকা|গ্রাম)\s*[:：]?\s*/g,'').replace(/[,;،]+\s*(?:উপজেলা|থানা|জেলা|সিটি করপোরেশন)\s*[:：][^,;،]*/g,'').trim();
+ const clean=raw.replace(/^(?:গ্রাম\/এরিয়া|এরিয়া|এলাকা|গ্রাম)\s*[:：]?\s*/,'').replace(/[,;،]+\s*(?:উপজেলা\/থানা|উপজেলা|থানা|জেলা|সিটি করপোরেশন)\s*[:：][^,;،]*/g,'').trim();
  if(d==='ঢাকা (শহর)'){
   const north=['উত্তরা','উত্তরা পশ্চিম','তুরাগ','দক্ষিণখান','উত্তরখান','খিলক্ষেত','এয়ারপোর্ট','বিমানবন্দর','গুলশান','বনানী','বাড্ডা','ভাটারা','তেজগাঁও','তেজগাঁও শিল্পাঞ্চল','মিরপুর','পল্লবী','রূপনগর','শাহ আলী','কাফরুল','ক্যান্টনমেন্ট','ভাষানটেক','আদাবর','মোহাম্মদপুর','শেরে বাংলা নগর','দারুস সালাম'];
   const corporation=north.some(x=>u.includes(x))?'ঢাকা উত্তর':'ঢাকা দক্ষিণ';
