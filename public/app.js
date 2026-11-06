@@ -494,7 +494,7 @@ function resolveCheckoutArea(address){
  const matchDistrict=value=>districts.filter(d=>checkoutAreaHasName(value,d.bn_name)||checkoutAreaHas(value,d.en_name));
  const matchUpazilas=(value,scope=districts)=>scope.flatMap(d=>(d.upazilas||[]).filter(u=>checkoutAreaHasName(value,u.bn_name)||checkoutAreaHas(value,u.en_name)).map(u=>({district:d.bn_name,upazila:u.bn_name})));
  // A district written as the final word (e.g. "boikali khulna") is an explicit district hint.
- const trailingDistrictToken=full.match(/(?:^|[\\s,;،])([\\p{L}\\p{N}]+)\\s*$/u)?.[1]||'';
+ const trailingDistrictToken=full.match(/(?:^|[\s,;،])([\p{L}\p{N}]+)\s*$/u)?.[1]||'';
  const trailingDistricts=trailingDistrictToken?matchDistrict(trailingDistrictToken):[];
  if(trailingDistricts.length===1){const d=trailingDistricts[0],ups=upazilaLabel?matchUpazilas(upazilaLabel,[d]):matchUpazilas(full,[d]),unique=[...new Map(ups.map(x=>[x.district+'|'+x.upazila,x])).values()];return {district:d.bn_name,upazila:unique.length===1?unique[0].upazila:''};}
  if(checkoutAreaHas(full,'নীলক্ষেত')&&checkoutAreaHas(full,'ঢাকা দক্ষিণ'))return {district:'ঢাকা (সিটি)',upazila:'নিউ মার্কেট'};
