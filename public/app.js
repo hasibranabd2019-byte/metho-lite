@@ -419,7 +419,7 @@ function renderAddressSuggestions(){
   const key=district+'|'+upazila+'|'+name;
   if(items.some(x=>x.key===key))return;
   const matchedQueries=[...new Set(queries.filter(q=>checkoutSuggestionMatches(q,name||upazila||district,locationNames.slice(1))||checkoutSuggestionMatches(q,district,districtNames.slice(1))))];
-  items.push({key,district,upazila,label:displayName?displayName+', '+district:(upazila?upazila+', '+district:district),localityName:displayName,districtMatched,locationMatched,locationAliases:locationNames,matchedQueries,matchScore:locationScore*10+districtScore});
+  items.push({key,district,upazila,label:displayName?displayName+', '+district:(upazila?upazila+', '+district:district),localityName:displayName,districtMatched,locationMatched,locationAliases:locationNames,matchedQueries,matchScore:locationScore*10+districtScore+(displayName?100:0)});
  };
  for(const d of districts){
   add(d.bn_name,'',d.bn_name,[d.en_name,d.name,...(CHECKOUT_ENGLISH_DISTRICT_ALIASES[d.bn_name]||[])]);
