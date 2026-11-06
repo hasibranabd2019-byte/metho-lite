@@ -532,7 +532,7 @@ function resolveCheckoutArea(address){
  if((checkoutAreaHas(full,'ঢাকা শহর')||checkoutAreaHas(full,'dhaka city'))&&hasDhaka)return {district:'ঢাকা (সিটি)',upazila:'ঢাকা শহর'};
  if(checkoutAreaHasName(full,'মহেশপুর'))return {district:'ঝিনাইদহ',upazila:'মহেশপুর'};
  const district=CHECKOUT_DISTRICTS.find(x=>checkoutAreaHasName(full,x));
- if(district&&CHECKOUT_AREA_ONLY_DISTRICTS.has(district))return {district,upazila:'',areaOnly:true,areaLabel:district};
+ if(district&&CHECKOUT_AREA_ONLY_DISTRICTS.has(district))return {district,upazila:'',areaOnly:true,areaLabel:district+' শহর'};
  if(checkoutAreaHasName(full,'খুলনা বিশ্ববিদ্যালয়')||checkoutAreaHas(full,'khulna university'))return {district:'খুলনা',upazila:'',areaOnly:true,areaLabel:'খুলনা বিশ্ববিদ্যালয়'};
  return {district:district||'',upazila:''};
 }
