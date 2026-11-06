@@ -5,7 +5,7 @@ const date=v=>{try{return new Date(v).toLocaleString('bn-BD',{dateStyle:'medium'
 const loadScript=src=>new Promise((resolve,reject)=>{const existing=[...document.scripts].find(s=>s.src===src);if(existing){if(existing.dataset.loaded==='1')return resolve();existing.addEventListener('load',resolve,{once:true});existing.addEventListener('error',reject,{once:true});return;}const s=document.createElement('script');s.src=src;s.async=true;s.onload=()=>{s.dataset.loaded='1';resolve();};s.onerror=()=>reject(Error('ইনভয়েসের প্রয়োজনীয় লাইব্রেরি লোড হয়নি।'));document.head.appendChild(s);});
 document.addEventListener('click',async e=>{
  const b=e.target.closest('[data-invoice-order]');if(!b)return;
- const original=b.textContent;b.disabled=true;b.textContent='ইনভয়েস তৈরি হচ্ছে…';let sheet;
+ const original=b.textContent;b.disabled=true;b.textContent='ইনভয়েস তৈরি হচ্ছে…';let sheet,pdfWindow,downloadUrl;const mobilePdfPreview=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);if(mobilePdfPreview){try{pdfWindow=window.open('about:blank','_blank');if(pdfWindow){pdfWindow.document.title='মেঠো ইনভয়েস';pdfWindow.document.body.innerHTML='<p style="font:16px sans-serif;padding:24px;text-align:center">ইনভয়েস তৈরি হচ্ছে…</p>';}}catch{pdfWindow=null;}}
  try{
   const pdfLibrary=window.html2pdf?Promise.resolve():loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js');const qrLibrary=window.QRCode?Promise.resolve():loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js').catch(()=>null);await Promise.all([pdfLibrary,qrLibrary]);if(typeof window.html2pdf!=='function')throw Error('PDF সুবিধাটি লোড হয়নি।');
   const r=await fetch('/api/invoice',{method:'POST',headers:{'content-type':'application/json'},cache:'no-store',body:JSON.stringify({orderCode:b.dataset.invoiceOrder,phone:b.dataset.invoicePhone})});
@@ -35,7 +35,7 @@ document.addEventListener('click',async e=>{
   if(visiblePixels<1)throw Error('ইনভয়েস ফাঁকা তৈরি হচ্ছে। পেজ রিফ্রেশ করে আবার চেষ্টা করুন।');
   const pdf=await worker.toPdf().get('pdf');
   if(!pdf||typeof pdf.save!=='function')throw Error('PDF ফাইল প্রস্তুত হয়নি। আবার চেষ্টা করুন।');
-  const blob=pdf.output('blob');if(!blob||blob.size<1000)throw Error('ইনভয়েস PDF ফাইল তৈরি হয়নি। আবার চেষ্টা করুন।');const downloadUrl=URL.createObjectURL(blob),downloadLink=document.createElement('a');downloadLink.href=downloadUrl;downloadLink.download=pdfOptions.filename;downloadLink.style.display='none';document.body.appendChild(downloadLink);downloadLink.click();downloadLink.remove();setTimeout(()=>URL.revokeObjectURL(downloadUrl),60000);
- }catch(x){alert(x.message||'ইনভয়েস ডাউনলোড করা যায়নি।');}finally{sheet?.remove();b.disabled=false;b.textContent=original;}
+  const blob=pdf.output('blob');if(!blob||blob.size<1000)throw Error('ইনভয়েস PDF ফাইল তৈরি হয়নি। আবার চেষ্টা করুন।');downloadUrl=URL.createObjectURL(blob);if(mobilePdfPreview&&pdfWindow&&!pdfWindow.closed){pdfWindow.location.href=downloadUrl;setTimeout(()=>URL.revokeObjectURL(downloadUrl),600000);}else{const downloadLink=document.createElement('a');downloadLink.href=downloadUrl;downloadLink.download=pdfOptions.filename;if(mobilePdfPreview){downloadLink.target='_blank';downloadLink.rel='noopener';}downloadLink.style.display='none';document.body.appendChild(downloadLink);downloadLink.click();downloadLink.remove();setTimeout(()=>URL.revokeObjectURL(downloadUrl),60000);}
+ }catch(x){if(pdfWindow&&!pdfWindow.closed)pdfWindow.close();alert(x.message||'ইনভয়েস ডাউনলোড করা যায়নি।');}finally{sheet?.remove();b.disabled=false;b.textContent=original;}
 });
 })();
