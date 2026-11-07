@@ -270,3 +270,11 @@ body:not(.cart-toast-open)> :not(#cart-toast){transition:filter .22s ease;}
 
 /* Keep address automation available in code but hidden in the current checkout UI. */
 .address-automation-hidden{display:none!important}
+
+
+/* Restore the original round radio-marker delivery-zone design */
+.delivery-zone-option{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:78px;padding:9px 5px;border-radius:10px;font-size:11px;line-height:1.4}
+.delivery-zone-radio{display:grid;place-items:center;width:19px;height:19px;flex:0 0 19px;border:1.7px solid #aab8a7;border-radius:50%;background:#fff;transition:border-color .15s,background .15s}
+.delivery-zone-option input:checked+.delivery-zone-radio{border:5px solid #218344;background:#fff}
+.delivery-zone-option:has(input:checked){border-color:#70a77b;background:#edf6eb;color:#195b2e;box-shadow:0 0 0 1px rgba(33,131,68,.08)}
+@media(max-width:360px){.delivery-zone-option{min-height:72px;padding:7px 3px;font-size:10px}}
