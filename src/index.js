@@ -28,7 +28,7 @@ async function api(req,env){const u=new URL(req.url),p=u.pathname,m=req.method;
   const r=await env.DB.prepare('SELECT * FROM orders WHERE phone=? ORDER BY id DESC LIMIT 100').bind(phone).all();
   const orders=[];
   for(const o of r.results){
-   const it=await env.DB.prepare('SELECT product_name,variant_label,quantity,unit_price_paisa,line_total_paisa FROM order_items WHERE order_id=? ORDER BY id').bind(o.id).all();
+   const it=await env.DB.prepare('SELECT product_name,variant_label,quantity,unit_price_paisa,line_total_paisa FROM order_items WHERE order_id=?').bind(o.id).all();
    orders.push({...o,status_bn:statusNames[o.status]||o.status,items:it.results});
   }
   return json({phone,orders});
