@@ -293,31 +293,33 @@ body:not(.cart-toast-open)> :not(#cart-toast){transition:filter .22s ease;}
 @media(prefers-reduced-motion:reduce){.collection-social a{transition:none;}}
 
 
-/* Header call action: soft golden halo and a gentle repeating text reveal */
+/* Keep the call icon perfectly circular; reveal its label beside it */
 .site-header .call-button{
-  width:auto;height:42px;min-width:44px;padding:0 13px;
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  border-radius:24px;background:#ffbd00;color:#243126;
+  width:44px;height:44px;min-width:44px;padding:0;
+  display:grid;place-items:center;position:relative;overflow:visible;
+  border-radius:50%;background:var(--gold);color:#172b1a;text-decoration:none;
   box-shadow:0 3px 10px rgba(160,117,0,.13),0 0 18px 5px rgba(255,189,0,.17),0 0 32px 8px rgba(255,189,0,.08);
   transition:box-shadow .35s ease,transform .25s ease;
-  overflow:hidden;
 }
-.site-header .call-button svg{width:19px;height:19px;flex:0 0 19px}
+.site-header .call-button svg{width:21px;height:21px;display:block}
 .site-header .call-button span{
-  display:inline-block;white-space:nowrap;font-size:13px;font-weight:700;line-height:1.3;
-  animation:call-label-reveal 3.6s cubic-bezier(.2,.7,.2,1) infinite;
+  position:absolute;right:calc(100% + 9px);top:50%;
+  display:block;white-space:nowrap;padding:7px 11px;border-radius:8px;
+  background:#fff;color:var(--green);border:1px solid #e2e8de;
+  box-shadow:0 3px 12px rgba(25,55,25,.10);
+  font-size:13px;font-weight:700;line-height:1.35;
+  pointer-events:none;animation:call-label-reveal 4s ease-in-out infinite;
 }
 @keyframes call-label-reveal{
-  0%,8%{opacity:0;transform:translateX(7px)}
-  22%,82%{opacity:1;transform:translateX(0)}
-  94%,100%{opacity:0;transform:translateX(-2px)}
+  0%,12%{opacity:0;transform:translate(8px,-50%)}
+  24%,78%{opacity:1;transform:translate(0,-50%)}
+  90%,100%{opacity:0;transform:translate(-2px,-50%)}
 }
 .site-header .call-button:active{transform:translateY(1px)}
 @media(max-width:380px){
-  .site-header .call-button{height:40px;padding:0 11px;gap:6px}
-  .site-header .call-button span{font-size:12px}
+  .site-header .call-button span{font-size:12px;padding:6px 9px;right:calc(100% + 7px)}
 }
 @media(prefers-reduced-motion:reduce){
-  .site-header .call-button span{animation:none;opacity:1;transform:none}
+  .site-header .call-button span{animation:none;opacity:1;transform:translate(0,-50%)}
   .site-header .call-button{transition:none}
 }
