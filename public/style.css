@@ -279,8 +279,15 @@ body:not(.cart-toast-open)> :not(#cart-toast){transition:filter .22s ease;}
 .delivery-zone-option:has(input:checked){border-color:#70a77b;background:#edf6eb;color:#195b2e;box-shadow:0 0 0 1px rgba(33,131,68,.08)}
 @media(max-width:360px){.delivery-zone-option{min-height:72px;padding:7px 3px;font-size:10px}}
 
-/* Soft premium glow for the WhatsApp and Messenger contact buttons */
-#social-links a.whatsapp{box-shadow:0 0 0 3px rgba(37,211,102,.12),0 4px 16px rgba(37,211,102,.34),0 0 22px rgba(37,211,102,.18);}
-#social-links a.messenger{box-shadow:0 0 0 3px rgba(8,102,255,.10),0 4px 16px rgba(8,102,255,.28),0 0 22px rgba(8,102,255,.14);}
-#social-links a{transition:box-shadow .22s ease,transform .22s ease;}
-#social-links a:active{transform:translateY(1px);}
+/* Smooth, diffused halo for the WhatsApp and Messenger contact buttons */
+.collection-social a.whatsapp{
+  box-shadow:0 3px 10px rgba(25,139,80,.12),0 0 18px 5px rgba(37,211,102,.15),0 0 34px 9px rgba(37,211,102,.07);
+}
+.collection-social a.messenger{
+  box-shadow:0 3px 10px rgba(8,102,255,.10),0 0 18px 5px rgba(8,102,255,.13),0 0 34px 9px rgba(8,102,255,.06);
+}
+.collection-social a{
+  transition:box-shadow .35s ease,transform .25s ease;
+}
+.collection-social a:active{transform:translateY(1px);}
+@media(prefers-reduced-motion:reduce){.collection-social a{transition:none;}}
