@@ -104,3 +104,6 @@ nav button[data-tab="orders"]{position:relative;overflow:visible}nav button[data
 .history-item small{grid-column:1/-1;font-size:10px;opacity:.8}
 .history-total{text-align:right;font-size:14px!important;margin-top:12px!important}
 @media(max-width:520px){.history-dialog{padding:14px;max-height:90vh}.history-summary span{font-size:10px}.history-order-row{grid-template-columns:minmax(0,1fr) auto}.history-chevron{display:none}.history-order-row strong{font-size:10px}}
+
+/* Restore a rejected order to pending */
+.actions .undo{background:#e8eee5!important;color:var(--green)!important;border:1px solid #cbd8c6!important;padding:7px 10px!important;white-space:nowrap}
